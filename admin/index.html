@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | Demgel Store</title>
+    <meta name="description" content="Panel administrativo y backoffice de Demgel Store para gestión de pedidos, stock, comprobantes y catálogo.">
+
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Stylesheet Oficial Admin -->
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <!-- ── Banner de Seguridad y Modo Mock ── -->
+    <div class="admin-security-banner">
+        <i class="fas fa-shield-alt"></i>
+        <span><strong>ENTORNO DE DEMOSTRACIÓN (MOCK / LOCAL):</strong> La seguridad real definitiva será gestionada en la fase de conexión mediante <strong>Supabase Auth + RLS + is_admin()</strong>.</span>
+    </div>
+
+    <!-- ── Header Superior ── -->
+    <header class="admin-header">
+        <div class="admin-nav-container">
+            <div class="admin-brand-wrap">
+                <a href="#dashboard" class="admin-brand">
+                    Demgel<span>.</span> Admin
+                </a>
+                <span class="admin-demo-badge">ADMIN DEMO</span>
+            </div>
+
+            <div class="admin-header-actions">
+                <a href="../index.html" target="_blank" class="btn-store-link">
+                    <i class="fas fa-external-link-alt"></i> Ver Tienda Pública
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Barra de Pestañas / Vistas ── -->
+    <nav class="admin-tabs-bar">
+        <div class="admin-tabs-container">
+            <button class="admin-tab-btn active" data-target="#dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </button>
+            <button class="admin-tab-btn" data-target="#pedidos">
+                <i class="fas fa-shopping-bag"></i> Pedidos en Vivo
+            </button>
+            <button class="admin-tab-btn" data-target="#productos">
+                <i class="fas fa-boxes"></i> Productos y Stock
+            </button>
+            <button class="admin-tab-btn" data-target="#configuracion">
+                <i class="fas fa-cog"></i> Configuración Tienda
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Contenido Principal de Vistas ── -->
+    <main class="admin-main">
+
+        <!-- ========================================== -->
+        <!-- 1. VISTA: DASHBOARD -->
+        <!-- ========================================== -->
+        <section id="view-dashboard" class="admin-view active">
+            <div class="section-header-admin">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-tachometer-alt"></i> Dashboard Principal</h1>
+                    <p class="section-desc-admin">Resumen operativo en tiempo real de la tienda Demgel (Datos Locales Demo).</p>
+                </div>
+            </div>
+
+            <!-- Grilla de KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-card--warning">
+                    <div class="kpi-label">
+                        <span>Pendientes de Pago</span>
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-pending-count">0</div>
+                    <div class="kpi-sub">Esperando comprobante (30 min)</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>En Revisión</span>
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-review-count">0</div>
+                    <div class="kpi-sub">Comprobante adjunto por verificar</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Listos para Retirar</span>
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-ready-count">0</div>
+                    <div class="kpi-sub">Esperando al cliente en mostrador</div>
+                </div>
+
+                <div class="kpi-card kpi-card--sales">
+                    <div class="kpi-label">
+                        <span>Ventas Online</span>
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-sales-total">$0</div>
+                    <div class="kpi-sub">Pedidos confirmados / completados</div>
+                </div>
+
+                <div class="kpi-card kpi-card--savings">
+                    <div class="kpi-label">
+                        <span>Ahorro Generado</span>
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-savings-total">$0</div>
+                    <div class="kpi-sub">Ahorro total para clientes online</div>
+                </div>
+
+                <div class="kpi-card kpi-card--alert">
+                    <div class="kpi-label">
+                        <span>Stock Bajo (&le; 5)</span>
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-low-stock">0</div>
+                    <div class="kpi-sub">Productos requiriendo reposición</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Tráfico Flyer / QR</span>
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-flyer-count">0 pedidos</div>
+                    <div class="kpi-sub">Ventas originadas desde volantes</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Pedidos Recientes -->
+            <div class="table-responsive-box">
+                <div style="padding: 1.2rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem; font-weight: 700;"><i class="fas fa-clock" style="color:var(--primary);"></i> Últimos Pedidos Registrados</h3>
+                    <a href="#pedidos" class="btn-action"><i class="fas fa-list"></i> Ver Todos</a>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total Online</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboard-recent-orders-tbody">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 2. VISTA: PEDIDOS -->
+        <!-- ========================================== -->
+        <section id="view-pedidos" class="admin-view">
+            <div class="section-header-admin">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-shopping-bag"></i> Gestión de Pedidos</h1>
+                    <p class="section-desc-admin">Revisa comprobantes, actualiza estados y administra el flujo de retiro en tienda.</p>
+                </div>
+                <div id="orders-total-count" class="status-badge-admin badge-confirmed">0 pedidos</div>
+            </div>
+
+            <!-- Barra de Filtros -->
+            <div class="filter-bar">
+                <div class="filter-input-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="order-search-input" class="admin-input" placeholder="Buscar por código (DG-...), cliente o WhatsApp...">
+                </div>
+
+                <select id="order-status-filter" class="admin-select">
+                    <option value="all">Todos los Estados</option>
+                    <option value="PENDIENTE DE PAGO">Pendiente de Pago</option>
+                    <option value="PAGO EN REVISIÓN">Pago en Revisión</option>
+                    <option value="PAGO CONFIRMADO">Pago Confirmado</option>
+                    <option value="LISTO PARA RETIRAR">Listo para Retirar</option>
+                    <option value="RETIRADO">Retirado</option>
+                    <option value="CANCELADO">Cancelado</option>
+                </select>
+
+                <select id="order-campaign-filter" class="admin-select">
+                    <option value="all">Todas las Fuentes</option>
+                    <option value="flyer">Flyer QR (?source=flyer)</option>
+                    <option value="direct">Tráfico Directo</option>
+                </select>
+            </div>
+
+            <!-- Tabla de Pedidos -->
+            <div class="table-responsive-box">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Fecha</th>
+                            <th>Cliente / WhatsApp</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Origen</th>
+                            <th>Comprobante</th>
+                            <th>Tiempo / Reserva</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-tbody">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. VISTA: PRODUCTOS Y STOCK -->
+        <!-- ========================================== -->
+        <section id="view-productos" class="admin-view">
+            <div class="section-header-admin" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-boxes"></i> Productos y Control de Stock</h1>
+                    <p class="section-desc-admin">Edita precios tienda, ofertas online, stock en tiempo real y publica nuevos productos con auto-recorte de foto.</p>
+                </div>
+                <button type="button" id="btn-open-create-product" class="btn-action btn-action--primary" style="padding: 0.8rem 1.4rem; font-size: 0.95rem; font-weight: 700;">
+                    <i class="fas fa-plus-circle"></i> + Crear Nuevo Producto
+                </button>
+            </div>
+
+            <!-- Filtros de Productos -->
+            <div class="filter-bar">
+                <div class="filter-input-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="product-search-input" class="admin-input" placeholder="Buscar por nombre o modelo (D-E4016C...)...">
+                </div>
+
+                <select id="product-category-filter" class="admin-select">
+                    <option value="all">Todas las Categorías</option>
+                    <option value="Cargadores">Cargadores</option>
+                    <option value="Cables">Cables</option>
+                    <option value="Vehículo">Vehículo</option>
+                    <option value="Audio">Audio</option>
+                </select>
+
+                <select id="product-stock-filter" class="admin-select">
+                    <option value="all">Todos los Stocks</option>
+                    <option value="normal">Normal (> 5 un.)</option>
+                    <option value="low_stock">Stock Bajo (&le; 5 un.)</option>
+                    <option value="out_of_stock">Agotado (0 un.)</option>
+                </select>
+            </div>
+
+            <!-- Tabla de Productos -->
+            <div class="table-responsive-box">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Producto / Ref</th>
+                            <th>Categoría</th>
+                            <th>Precio Tienda</th>
+                            <th>Precio Online</th>
+                            <th>% Ahorro</th>
+                            <th>Stock</th>
+                            <th>Etiquetas</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-tbody">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 4. VISTA: CONFIGURACIÓN -->
+        <!-- ========================================== -->
+        <section id="view-configuracion" class="admin-view">
+            <div class="section-header-admin">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-cog"></i> Configuración de Tienda</h1>
+                    <p class="section-desc-admin">Parámetros de cuentas bancarias y retiro presencial (Actualmente con valores limpios de configuración).</p>
+                </div>
+            </div>
+
+            <form id="admin-config-form" style="max-width: 900px;">
+                <!-- Bloque Transferencia Bancaria -->
+                <div class="table-responsive-box" style="padding: 1.8rem; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--primary-light);">
+                        <i class="fas fa-university"></i> Datos para Transferencia Bancaria
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Banco</label>
+                            <input type="text" id="cfg-bank-name" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Tipo de Cuenta</label>
+                            <input type="text" id="cfg-account-type" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Número de Cuenta</label>
+                            <input type="text" id="cfg-account-number" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">RUT Titular</label>
+                            <input type="text" id="cfg-rut" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre del Titular</label>
+                            <input type="text" id="cfg-holder" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Correo de Confirmación</label>
+                            <input type="email" id="cfg-email" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Instrucciones para el Cliente</label>
+                        <textarea id="cfg-instructions" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Bloque CajaVecina -->
+                <div class="table-responsive-box" style="padding: 1.8rem; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--status-pending);">
+                        <i class="fas fa-store-alt"></i> Datos para CajaVecina / Depósito
+                    </h3>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Instrucciones CajaVecina</label>
+                        <textarea id="cfg-cajavecina-instructions" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Bloque Retiro en Tienda -->
+                <div class="table-responsive-box" style="padding: 1.8rem; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--accent-cyan);">
+                        <i class="fas fa-map-marker-alt"></i> Datos de Retiro Presencial en Tienda
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre de la Tienda</label>
+                            <input type="text" id="cfg-store-name" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Dirección Física de Retiro</label>
+                            <input type="text" id="cfg-pickup-address" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Horario de Atención</label>
+                            <input type="text" id="cfg-pickup-hours" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">WhatsApp de Soporte</label>
+                            <input type="text" id="cfg-support-whatsapp" class="admin-input" style="padding-left: 1rem;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Instrucciones para el Retiro</label>
+                        <textarea id="cfg-pickup-instructions" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-action btn-action--primary" style="padding: 0.8rem 1.8rem; font-size: 0.95rem;">
+                    <i class="fas fa-save"></i> Guardar Cambios Locales
+                </button>
+            </form>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 5. VISTA: ANALÍTICA -->
+        <!-- ========================================== -->
+        <section id="view-analitica" class="admin-view">
+            <div class="section-header-admin">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-chart-line"></i> Analítica y Embudo Comercial</h1>
+                    <p class="section-desc-admin">Conversión del flujo físico a digital: Flyer QR &rarr; /ofertas &rarr; Producto &rarr; Carrito &rarr; Checkout &rarr; Pedido &rarr; Comprobante.</p>
+                </div>
+                <div class="status-badge-admin badge-review">MOCK / DEMO DATA</div>
+            </div>
+
+            <!-- Embudo Comercial -->
+            <div class="funnel-container">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem;">
+                    <i class="fas fa-filter" style="color: var(--primary);"></i> Embudo de Conversión (Físico &rarr; Retiro)
+                </h3>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">1. Escaneos QR / Flyer</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-flyer" class="funnel-bar-fill" style="width: 100%;">100%</div>
+                    </div>
+                    <strong id="an-flyer-scans" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">2. Vistas de Producto</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-views" class="funnel-bar-fill" style="width: 70%;">70%</div>
+                    </div>
+                    <strong id="an-product-views" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">3. Agregados al Carrito</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-cart" class="funnel-bar-fill" style="width: 50%;">50%</div>
+                    </div>
+                    <strong id="an-cart-adds" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">4. Checkout Iniciado</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-checkout" class="funnel-bar-fill" style="width: 35%;">35%</div>
+                    </div>
+                    <strong id="an-checkout-starts" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">5. Pedidos Creados</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-orders" class="funnel-bar-fill" style="width: 25%;">25%</div>
+                    </div>
+                    <strong id="an-orders-created" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">6. Comprobantes Enviados</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-receipts" class="funnel-bar-fill" style="width: 20%;">20%</div>
+                    </div>
+                    <strong id="an-receipts-uploaded" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">7. Pagos Confirmados</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-confirmed" class="funnel-bar-fill" style="width: 15%;">15%</div>
+                    </div>
+                    <strong id="an-orders-confirmed" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+
+                <div class="funnel-step-row">
+                    <div class="funnel-step-label">8. Pedidos Retirados</div>
+                    <div class="funnel-bar-wrap">
+                        <div id="bar-completed" class="funnel-bar-fill" style="width: 12%;">12%</div>
+                    </div>
+                    <strong id="an-orders-completed" style="min-width: 50px; text-align: right;">0</strong>
+                </div>
+            </div>
+
+            <!-- Resumen de Atribución -->
+            <div class="table-responsive-box" style="padding: 1.5rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem;"><i class="fas fa-bullseye" style="color:var(--primary);"></i> Atribución de Campaña</h4>
+                <p id="an-flyer-vs-direct" style="color: var(--text-muted); font-size: 0.95rem;">-</p>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 6. VISTA: HISTORIAL / AUDITORÍA -->
+        <!-- ========================================== -->
+        <section id="view-historial" class="admin-view">
+            <div class="section-header-admin">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-history"></i> Historial y Eventos de Auditoría</h1>
+                    <p class="section-desc-admin">Registro inmutable de acciones administrativas (Simulación de tabla event_logs).</p>
+                </div>
+            </div>
+
+            <div class="table-responsive-box">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo de Evento</th>
+                            <th>Pedido ID</th>
+                            <th>Usuario</th>
+                            <th>Detalles de la Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-tbody">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODAL: DETALLE DEL PEDIDO Y COMPROBANTE -->
+    <!-- ========================================== -->
+    <div id="modal-order-detail" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-receipt" style="color: var(--primary);"></i>
+                    <span>Pedido: <strong id="detail-order-number">DG-2026-0000</strong></span>
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+
+            <!-- Timeline de Estado -->
+            <div class="status-timeline">
+                <div id="step-1" class="timeline-step">
+                    <div class="timeline-dot"><i class="fas fa-clock"></i></div>
+                    <div class="timeline-label">1. Pendiente</div>
+                </div>
+                <div id="step-2" class="timeline-step">
+                    <div class="timeline-dot"><i class="fas fa-search"></i></div>
+                    <div class="timeline-label">2. Revisión</div>
+                </div>
+                <div id="step-3" class="timeline-step">
+                    <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                    <div class="timeline-label">3. Confirmado</div>
+                </div>
+                <div id="step-4" class="timeline-step">
+                    <div class="timeline-dot"><i class="fas fa-store"></i></div>
+                    <div class="timeline-label">4. Listo Retiro</div>
+                </div>
+                <div id="step-5" class="timeline-step">
+                    <div class="timeline-dot"><i class="fas fa-check-double"></i></div>
+                    <div class="timeline-label">5. Retirado</div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+                <div id="detail-status-badge"></div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Creado el: <strong id="detail-created-at" style="color: #FFF;">-</strong>
+                </div>
+            </div>
+
+            <!-- Datos del Cliente -->
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--primary-light);">
+                    <i class="fas fa-user"></i> Datos del Cliente
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; font-size: 0.88rem;">
+                    <div>Cliente: <strong id="detail-customer-name" style="color: #FFF;">-</strong></div>
+                    <div>WhatsApp: <strong id="detail-customer-phone" style="color: #FFF;">-</strong></div>
+                    <div>Email: <strong id="detail-customer-email" style="color: #FFF;">-</strong></div>
+                    <div>Método de Pago: <strong id="detail-payment-method" style="color: #FFF;">-</strong></div>
+                    <div>Campaña: <strong id="detail-source-campaign" style="color: #FFF;">-</strong></div>
+                    <div>Vencimiento Reserva: <strong id="detail-expires-at" style="color: #FFF;">-</strong></div>
+                </div>
+            </div>
+
+            <!-- Visor de Comprobante de Pago -->
+            <div class="receipt-viewer-box">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; text-align: left; color: #FFF;">
+                    <i class="fas fa-paperclip" style="color: var(--primary);"></i> Comprobante Adjunto por el Cliente
+                </h4>
+                <div id="detail-receipt-viewer">
+                    <!-- Inyectado por JS -->
+                </div>
+            </div>
+
+            <!-- Lista de Artículos -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: #FFF;">
+                    <i class="fas fa-boxes" style="color: var(--primary);"></i> Artículos del Pedido
+                </h4>
+                <div id="detail-order-items"></div>
+            </div>
+
+            <!-- Totales -->
+            <div style="background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text-muted);">
+                    <span>Precio Mostrador:</span>
+                    <span id="detail-store-total">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--accent-cyan); font-weight: 700;">
+                    <span>Ahorro Cliente:</span>
+                    <span id="detail-savings-total">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 900; color: #FFF; border-top: 1px solid var(--glass-border); padding-top: 6px;">
+                    <span>TOTAL A PAGAR:</span>
+                    <span id="detail-online-total" style="color: var(--primary-light);">$0</span>
+                </div>
+            </div>
+
+            <!-- Notas Administrativas -->
+            <div style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: var(--radius-sm);">
+                <strong>Notas / Historial:</strong> <span id="detail-admin-notes">-</span>
+            </div>
+
+            <!-- Barra de Acciones Administrativas -->
+            <div id="detail-action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--glass-border); padding-top: 1.2rem;">
+                <!-- Inyectado dinámicamente según estado -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CANCELACIÓN ADMINISTRATIVA -->
+    <!-- ========================================== -->
+    <div id="modal-cancel-order" class="modal-overlay">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--status-cancelled);">
+                    <i class="fas fa-exclamation-triangle"></i> Cancelar Pedido
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+            
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Al cancelar este pedido, las unidades reservadas <strong>volverán automáticamente al stock disponible</strong> en catálogo. El historial y motivo quedarán registrados permanentemente.
+            </p>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-size: 0.82rem; color: #FFF; display: block; margin-bottom: 6px; font-weight: 700;">
+                    Motivo obligatorio de cancelación:
+                </label>
+                <textarea id="cancel-reason-input" class="admin-input" placeholder="Ej: Comprobante ilegible / Cliente solicitó anulación..." style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 90px; resize: vertical;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-action btn-modal-cancel">Volver</button>
+                <button type="button" id="btn-confirm-cancel-order" class="btn-action btn-action--danger">
+                    <i class="fas fa-ban"></i> Confirmar Cancelación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CREACIÓN DE NUEVO PRODUCTO -->
+    <!-- ========================================== -->
+    <div id="modal-create-product" class="modal-overlay">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-plus-circle" style="color: var(--primary-light);"></i> Publicar Nuevo Producto
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+
+            <form id="create-product-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre del Producto *</label>
+                        <input type="text" id="create-product-name" class="admin-input" style="padding-left: 1rem;" placeholder="Ej: Cargador Demgel 4.8A" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Referencia Modelo (SKU)</label>
+                        <input type="text" id="create-product-model" class="admin-input" style="padding-left: 1rem;" placeholder="Ej: D-E9000">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Descripción del Producto</label>
+                    <textarea id="create-product-desc" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 60px; resize: vertical;" placeholder="Descripción de empaque, capacidad o accesorios incluidos..."></textarea>
+                </div>
+
+                <!-- Carga y Auto-Recorte de Imagen -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--glass-border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+                    <label style="font-size: 0.85rem; color: #FFF; display: block; margin-bottom: 6px; font-weight: 700;">
+                        <i class="fas fa-camera" style="color: var(--primary);"></i> Foto del Producto (Auto-Recorte Automático 800x800)
+                    </label>
+                    <input type="file" id="create-product-file" class="admin-input" accept="image/*" style="padding: 0.4rem; margin-bottom: 0.8rem;">
+                    <div id="create-img-preview-box" style="display: flex; align-items: center; gap: 1rem;">
+                        <img id="create-img-preview" src="../assets/products/D-E6048C.jpg" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: #000;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Al seleccionar la foto, el sistema la recortará y centrará en formato cuadrado perfecto automáticamente.</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Categoría *</label>
+                        <select id="create-product-category" class="admin-select" style="width: 100%;">
+                            <option value="cargadores">Cargadores</option>
+                            <option value="cables">Cables</option>
+                            <option value="auto">Para Auto</option>
+                            <option value="parlantes">Mini Parlantes</option>
+                            <option value="otros">Otros Accesorios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Stock Inicial *</label>
+                        <input type="number" id="create-product-stock" class="admin-input" style="padding-left: 1rem;" min="0" value="10" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Precio Mostrador (Tienda) *</label>
+                        <input type="number" id="create-product-store-price" class="admin-input" style="padding-left: 1rem;" min="1" placeholder="7990" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Precio Especial Online *</label>
+                        <input type="number" id="create-product-online-price" class="admin-input" style="padding-left: 1rem;" min="1" placeholder="5990" required>
+                    </div>
+                </div>
+
+                <div id="create-savings-preview" style="font-size: 0.85rem; margin-bottom: 1.2rem; min-height: 24px;"></div>
+
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="create-product-deal" checked> Producto en Oferta
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="create-product-featured" checked> Producto Destacado
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="create-product-active" checked> Activo en Tienda
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn-action btn-action--primary">
+                        <i class="fas fa-plus-circle"></i> Publicar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: EDICIÓN DE PRODUCTO -->
+    <!-- ========================================== -->
+    <div id="modal-edit-product" class="modal-overlay">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-edit" style="color: var(--primary);"></i> Editar Producto
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+
+            <form id="edit-product-form">
+                <input type="hidden" id="edit-product-id">
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre del Producto</label>
+                    <input type="text" id="edit-product-name" class="admin-input" style="padding-left: 1rem;" required>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Descripción Corta</label>
+                    <textarea id="edit-product-desc" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 60px; resize: vertical;"></textarea>
+                </div>
+
+                <!-- Carga y Auto-Recorte de Imagen para Edición -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--glass-border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+                    <label style="font-size: 0.85rem; color: #FFF; display: block; margin-bottom: 6px; font-weight: 700;">
+                        <i class="fas fa-camera" style="color: var(--primary);"></i> Actualizar Foto (Auto-Recorte Automático)
+                    </label>
+                    <input type="file" id="edit-product-file" class="admin-input" accept="image/*" style="padding: 0.4rem; margin-bottom: 0.8rem;">
+                    <div id="edit-img-preview-box" style="display: flex; align-items: center; gap: 1rem;">
+                        <img id="edit-img-preview" src="../assets/products/D-E6048C.jpg" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: #000;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Puedes reemplazar la foto del producto seleccionando un archivo de tu equipo.</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Categoría</label>
+                        <select id="edit-product-category" class="admin-select" style="width: 100%;">
+                            <option value="cargadores">Cargadores</option>
+                            <option value="cables">Cables</option>
+                            <option value="auto">Para Auto</option>
+                            <option value="parlantes">Mini Parlantes</option>
+                            <option value="otros">Otros Accesorios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Stock Disponible</label>
+                        <input type="number" id="edit-product-stock" class="admin-input" style="padding-left: 1rem;" min="0" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Precio Mostrador (Tienda)</label>
+                        <input type="number" id="edit-product-store-price" class="admin-input" style="padding-left: 1rem;" min="1" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Precio Especial Online</label>
+                        <input type="number" id="edit-product-online-price" class="admin-input" style="padding-left: 1rem;" min="1" required>
+                    </div>
+                </div>
+
+                <!-- Previsualización Dinámica de Ahorro / Error -->
+                <div id="edit-savings-preview" style="font-size: 0.85rem; margin-bottom: 1.2rem; min-height: 24px;"></div>
+
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-product-deal"> Producto en Oferta
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-product-featured"> Producto Destacado
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-product-active" checked> Activo en Catálogo
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn-action btn-action--primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts de Datos y Servicios -->
+    <script src="../js/data.js"></script>
+    <script src="../js/analytics.js"></script>
+    <script src="../js/services/telegramService.js"></script>
+    <script src="js/services/adminOrderService.js"></script>
+    <script src="js/services/adminProductService.js"></script>
+    <script src="js/services/adminConfigService.js"></script>
+    <script src="js/services/adminAnalyticsService.js"></script>
+    <script src="js/adminApp.js"></script>
+</body>
+</html>
