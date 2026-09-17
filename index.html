@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demgel Store | Accesorios y Tecnología Premium</title>
+    <meta name="description" content="Tienda oficial Demgel. Compra cargadores, cables y accesorios a precio exclusivo online con retiro presencial en tienda.">
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ofertas.css">
+</head>
+<body>
+
+    <!-- ── Header / Navegación ── -->
+    <header id="main-header">
+        <nav class="container">
+            <a href="index.html" class="logo">
+                <span class="brand">Demgel<span>.</span></span>
+                <span class="tagline">Official Store</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Inicio</a></li>
+                <li><a href="#catalogo">Ofertas Online</a></li>
+                <li><a href="#catalogo">Catálogo</a></li>
+                <li><a href="#como-comprar">Cómo Comprar</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="nav-cart-btn" aria-label="Ver Carrito">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-counter-badge" style="display: none;">0</span>
+                </button>
+                <div class="nav-hamburger" id="mobile-menu-btn" role="button" aria-label="Menú móvil">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ── Menú Móvil Fullscreen ── -->
+    <div id="mobile-menu" class="mobile-menu">
+        <a href="index.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="#catalogo"><i class="fas fa-bolt"></i> Ofertas Online</a>
+        <a href="#catalogo"><i class="fas fa-plug"></i> Catálogo</a>
+        <a href="#como-comprar"><i class="fas fa-store"></i> Retiro en Tienda</a>
+        <button class="btn-primary mobile-cart-btn" style="margin-top: 1rem; width: 80%;">
+            <i class="fas fa-shopping-bag"></i> Ver Carrito
+        </button>
+    </div>
+
+    <!-- ── Banner Dinámico de Campaña QR (visible si source=flyer) ── -->
+    <div id="qr-campaign-banner" class="qr-campaign-banner"></div>
+
+    <main>
+        <!-- ====== HERO SECTION ====== -->
+        <section class="hero">
+            <div class="hero-glow"></div>
+            <div class="container hero-content">
+                <div class="hero-eyebrow">
+                    <i class="fas fa-shield-alt"></i> Tienda Oficial Demgel
+                </div>
+
+                <h1 class="hero-title">
+                    Tecnología Premium.<br>
+                    <span class="text-gradient">Precio Especial Online.</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    Accede a precios exclusivos comprando por la web. Asegura tus cargadores, cables y accesorios originales con retiro directo en nuestra tienda.
+                </p>
+
+                <!-- Comparativa de Precios Hero -->
+                <div class="hero-price-comparison-pill">
+                    <div class="pill-item-store">
+                        Precio en mostrador: <del>Más Alto</del>
+                    </div>
+                    <div class="pill-sep">|</div>
+                    <div class="pill-item-online">
+                        <i class="fas fa-check-circle"></i> Precio Online: <strong>Hasta 25% MENOS</strong>
+                    </div>
+                    <div class="pill-sep">|</div>
+                    <div class="pill-item-store">
+                        <i class="fas fa-store"></i> Retiro Inmediato
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <a href="#catalogo" class="btn-primary">
+                        <i class="fas fa-bolt"></i> Ver Ofertas Exclusivas
+                    </a>
+                    <a href="#catalogo" class="btn-secondary">
+                        Explorar Catálogo
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== BARRA DE CATEGORÍAS ====== -->
+        <section class="categories-section">
+            <div class="container">
+                <div id="categories-bar" class="categories-bar">
+                    <!-- Inyectado dinámicamente por app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== CATÁLOGO DE PRODUCTOS ====== -->
+        <section id="catalogo" class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-eyebrow">
+                        <i class="fas fa-sparkles"></i> Catálogo Disponible
+                    </div>
+                    <h2 class="section-title">Nuestros Productos <span class="text-gradient">Demgel</span></h2>
+                    <p class="section-subtitle">Asegura tu reserva online al mejor precio y retira en tienda.</p>
+                </div>
+
+                <div id="products-grid" class="products-grid">
+                    <!-- Inyectado dinámicamente por app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== CÓMO COMPRAR (3 PASOS) ====== -->
+        <section id="como-comprar" class="how-it-works">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-eyebrow"><i class="fas fa-shopping-bag"></i> Proceso Rápido</div>
+                    <h2 class="section-title">Así Funciona tu <span class="text-gradient">Compra Online</span></h2>
+                    <p class="section-subtitle">Simple, transparente y con ahorro directo garantizado.</p>
+                </div>
+
+                <div class="how-steps">
+                    <div class="step-card">
+                        <div class="step-num">01</div>
+                        <div class="step-icon"><i class="fas fa-mobile-screen"></i></div>
+                        <h3>Elige Online</h3>
+                        <p>Selecciona tus accesorios Demgel aprovechando el precio web rebajado.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-num">02</div>
+                        <div class="step-icon"><i class="fas fa-clock"></i></div>
+                        <h3>Reserva 30 Minutos</h3>
+                        <p>Genera tu pedido. Tu stock queda asegurado por 30 min mientras transfieres o pagas en CajaVecina.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-num">03</div>
+                        <div class="step-icon"><i class="fas fa-store"></i></div>
+                        <h3>Retira en Tienda</h3>
+                        <p>Muestra tu código DG-XXXX en nuestro local y llévate tu producto listo y probado.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ====== BARRA FLOTANTE MÓVIL (STICKY QUICK CART) ====== -->
+    <div id="mobile-sticky-cart" class="mobile-sticky-cart-bar" aria-live="polite">
+        <div class="mobile-sticky-cart-content">
+            <div class="mobile-sticky-cart-info">
+                <span id="mobile-cart-items-count" class="mobile-sticky-cart-count">0 productos</span>
+                <span id="mobile-cart-total-val" class="mobile-sticky-cart-total">$0</span>
+            </div>
+            <button id="mobile-cart-cta-btn" class="mobile-sticky-cart-cta" onclick="DemgelCart.openDrawer()">
+                <i class="fas fa-shopping-bag"></i> Ver Carrito
+            </button>
+        </div>
+    </div>
+
+    <!-- ====== SLIDE-OVER DRAWER DEL CARRITO ====== -->
+    <div id="cart-drawer-overlay" class="cart-drawer-overlay"></div>
+    <aside id="cart-drawer" class="cart-drawer" aria-label="Carrito de compras">
+        <div class="cart-drawer__header">
+            <h3 class="cart-drawer__title">
+                <i class="fas fa-shopping-bag"></i> Tu Carrito Demgel
+            </h3>
+            <button id="cart-drawer-close" class="cart-drawer__close" aria-label="Cerrar carrito">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="cart-drawer-items" class="cart-drawer__items">
+            <!-- Items inyectados por cart.js -->
+        </div>
+
+        <div id="cart-drawer-empty" class="cart-drawer__empty" style="display: none;">
+            <i class="fas fa-shopping-cart"></i>
+            <h4>Tu carrito está vacío</h4>
+            <p>Agrega cargadores, cables o parlantes para asegurar tu precio online.</p>
+        </div>
+
+        <div id="cart-drawer-footer" class="cart-drawer__footer" style="display: none;">
+            <div class="cart-pickup-notice">
+                <i class="fas fa-store"></i> Modalidad: Retiro Presencial en Tienda
+            </div>
+            <div class="cart-summary-line">
+                <span>Precio normal en mostrador:</span>
+                <span id="cart-total-store">$0</span>
+            </div>
+            <div class="cart-summary-line cart-summary-line--savings">
+                <span><i class="fas fa-tag"></i> Ahorro total online:</span>
+                <span id="cart-total-savings">$0</span>
+            </div>
+            <div class="cart-summary-total">
+                <span>Total a Pagar:</span>
+                <span id="cart-total-online">$0</span>
+            </div>
+            <button id="cart-checkout-btn" class="btn-primary btn-checkout">
+                Continuar al Pago <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ====== MODAL DE FICHA DE PRODUCTO ====== -->
+    <div id="product-modal" class="product-modal" aria-hidden="true">
+        <div class="product-modal__content">
+            <button id="product-modal-close" class="product-modal__close" aria-label="Cerrar ventana">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="product-modal-body">
+                <!-- Inyectado por app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== NOTIFICACIÓN TOAST DE CARRITO ====== -->
+    <div id="cart-toast" class="cart-toast" aria-live="polite">
+        <div class="cart-toast__content" id="cart-toast-body">
+            <!-- Inyectado por cart.js -->
+        </div>
+    </div>
+
+    <!-- ====== FOOTER ====== -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <span class="brand" style="font-size: 1.5rem; font-weight: 800;">Demgel<span style="color: var(--primary);">.</span></span>
+                    <p style="margin-top: 0.5rem;">Tecnología y accesorios garantizados con precios especiales para compras por internet y retiro físico.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Categorías</h4>
+                    <a href="#catalogo">Cargadores de Pared</a>
+                    <a href="#catalogo">Cables de Carga Rápida</a>
+                    <a href="#catalogo">Accesorios para Auto</a>
+                    <a href="#catalogo">Mini Parlantes Bluetooth</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Retiro y Atención</h4>
+                    <p><i class="fas fa-store" style="color: var(--primary);"></i> Retiro directo en local</p>
+                    <p><i class="fas fa-clock" style="color: var(--primary);"></i> Lunes a Sábado</p>
+                    <p><i class="fab fa-whatsapp" style="color: var(--accent-green);"></i> Soporte WhatsApp</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Demgel Store. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Sincronizar barra flotante inferior táctil en móviles
+        function syncMobileStickyCart() {
+            if (typeof DemgelCart === "undefined") return;
+            const summary = DemgelCart.getSummary();
+            const bar = document.getElementById("mobile-sticky-cart");
+            const countEl = document.getElementById("mobile-cart-items-count");
+            const totalEl = document.getElementById("mobile-cart-total-val");
+            if (!bar) return;
+
+            if (summary.totalItems > 0 && window.innerWidth < 768) {
+                bar.style.display = "block";
+                if (countEl) countEl.textContent = `${summary.totalItems} ${summary.totalItems === 1 ? 'producto' : 'productos'} online`;
+                if (totalEl) totalEl.textContent = formatCLP(summary.totalOnline);
+            } else {
+                bar.style.display = "none";
+            }
+        }
+
+        window.addEventListener("resize", syncMobileStickyCart);
+        document.addEventListener("demgel:cart_updated", syncMobileStickyCart);
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(syncMobileStickyCart, 300);
+            const badge = document.querySelector(".cart-counter-badge");
+            if (badge) {
+                const observer = new MutationObserver(syncMobileStickyCart);
+                observer.observe(badge, { childList: true, characterData: true, subtree: true });
+            }
+        });
+    </script>
+</body>
+
+</html>
