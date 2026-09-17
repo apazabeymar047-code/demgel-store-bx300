@@ -218,50 +218,15 @@ function getActiveProductsList() {
         if (raw) {
             let stored = JSON.parse(raw);
             if (Array.isArray(stored) && stored.length > 0) {
-                let modified = false;
-                const originalLen = stored.length;
-
-                // Purgar productos fantasma de Soporte Magnético creados en pruebas locales
-                let filtered = stored.filter(p => {
-                    const pName = (p.name || "").toLowerCase();
-                    const pModel = (p.model_reference || "").toUpperCase();
-                    const pId = (p.id || "").toLowerCase();
-
-                    // Eliminar cualquier producto de prueba que contenga "soporte" o "360" o con modelo D-N0301 que no sea la TV Box oficial
-                    if (pName.includes("soporte") || pName.includes("360") || (pModel === "D-N0301" && pId !== "prod-d-n0301")) {
-                        return false;
-                    }
-                    return true;
-                });
-
-                if (filtered.length !== originalLen) modified = true;
-
                 // Sincronizar imágenes locales HD
-                let cleaned = filtered.map(p => {
-                    const pName = (p.name || "").toLowerCase();
+                return stored.map(p => {
                     const modelRef = (p.model_reference || "").toUpperCase();
-
                     let imgPath = p.image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
                     }
-
-                    // Auto-migrar categoría a TV BOX solo si el NOMBRE del producto incluye TV Box o es el ID oficial de TV Box
-                    if ((pName.includes("tv box") || pName.includes("tvbox") || p.id === "prod-d-n0301")) {
-                        return { ...p, image: "assets/products/D-N0301.jpg", category: "tvbox", category_name: "TV BOX" };
-                    }
-
                     return { ...p, image: imgPath };
                 });
-
-                // Si se realizaron correcciones en productos corruptos en el navegador del usuario, sobreescribir localStorage inmediatamente
-                if (modified) {
-                    try {
-                        localStorage.setItem("demgel_mock_products", JSON.stringify(cleaned));
-                    } catch (err) {}
-                }
-
-                return cleaned;
             }
         }
     } catch (e) {
@@ -282,18 +247,17 @@ function getProductsByCategory(categorySlug) {
         const pCat = (p.category || "").toString().toLowerCase().trim();
         const pCatId = (p.category_id || "").toString().toLowerCase().trim();
         const pCatName = (p.category_name || "").toString().toLowerCase().trim();
-        const pName = (p.name || "").toString().toLowerCase().trim();
 
         if (pCat === target || pCatId === target || pCatName === target) return true;
 
         // Coincidencia flexible para TV BOX
-        const isTvTarget = target.includes("tv") || target.includes("box");
-        const isTvProduct = (pCat.includes("tv") || pCatName.includes("tv") || pName.includes("tv box") || pName.includes("tvbox")) && !pName.includes("soporte");
+        const isTvTarget = target === "tvbox" || target.includes("tv");
+        const isTvProduct = pCat === "tvbox" || pCat.includes("tv");
         if (isTvTarget && isTvProduct) return true;
 
         // Sinonimia para auto / vehículo / accesorios-para-auto
-        const isAutoTarget = target.includes("auto") || target.includes("vehicul");
-        const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul") || pName.includes("soporte");
+        const isAutoTarget = target === "auto" || target.includes("auto") || target.includes("vehicul");
+        const isAutoProduct = pCat === "auto" || pCat.includes("auto") || pCat.includes("vehicul");
         if (isAutoTarget && isAutoProduct) return true;
 
         return false;
@@ -361,49 +325,29 @@ async function syncCatalogWithSupabase() {
             }
 
             if (remoteProds && remoteProds.length > 0) {
-                const localProds = getActiveProductsList();
                 const prodMap = new Map();
 
-                // Preservar productos locales (incluyendo TV BOX D-N0301)
-                localProds.forEach(p => {
-                    prodMap.set(p.id, p);
-                });
-
-                // Fusionar productos de Supabase
+                // Fusionar productos directamente desde Supabase
                 remoteProds.forEach(p => {
-                    const pName = (p.name || "").toLowerCase();
                     let modelRef = (p.model_reference || p.model || "").toUpperCase();
-
-                    // Evitar que Soporte Magnético absorba modelo o categoría de TV BOX desde Supabase
-                    if (pName.includes("soporte") || pName.includes("auto 360")) {
-                        modelRef = "D-D0004C";
-                        p.category = "auto";
-                        p.category_name = "Accesorios para Auto";
-                    }
 
                     let imgPath = p.image || p.main_image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
                     }
                     
-                    let catSlug = (p.category && p.category.slug) ? p.category.slug : p.category;
-                    if ((modelRef === "D-N0301" || pName.includes("tv box")) && !pName.includes("soporte")) {
-                        catSlug = "tvbox";
-                    } else if (pName.includes("soporte") || pName.includes("auto 360")) {
-                        catSlug = "auto";
-                    }
+                    let catSlug = (p.category && p.category.slug) ? p.category.slug : (p.category || "otros");
 
                     const formattedRemote = {
                         ...p,
                         model_reference: modelRef,
                         category: catSlug,
+                        category_name: (p.category && p.category.name) ? p.category.name : (p.category_name || "Accesorios"),
                         image: imgPath,
                         gallery: [imgPath]
                     };
 
-                    if (!prodMap.has(p.id)) {
-                        prodMap.set(p.id, formattedRemote);
-                    }
+                    prodMap.set(p.id, formattedRemote);
                 });
 
                 DEMGEL_PRODUCTS = Array.from(prodMap.values());
