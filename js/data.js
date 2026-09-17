@@ -371,19 +371,31 @@ async function syncCatalogWithSupabase() {
 
                 // Fusionar productos de Supabase
                 remoteProds.forEach(p => {
-                    const modelRef = (p.model_reference || p.model || "").toUpperCase();
+                    const pName = (p.name || "").toLowerCase();
+                    let modelRef = (p.model_reference || p.model || "").toUpperCase();
+
+                    // Evitar que Soporte Magnético absorba modelo o categoría de TV BOX desde Supabase
+                    if (pName.includes("soporte") || pName.includes("auto 360")) {
+                        modelRef = "D-D0004C";
+                        p.category = "auto";
+                        p.category_name = "Accesorios para Auto";
+                    }
+
                     let imgPath = p.image || p.main_image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
                     }
                     
                     let catSlug = (p.category && p.category.slug) ? p.category.slug : p.category;
-                    if (modelRef === "D-N0301" || (p.name || "").toLowerCase().includes("tv box")) {
+                    if ((modelRef === "D-N0301" || pName.includes("tv box")) && !pName.includes("soporte")) {
                         catSlug = "tvbox";
+                    } else if (pName.includes("soporte") || pName.includes("auto 360")) {
+                        catSlug = "auto";
                     }
 
                     const formattedRemote = {
                         ...p,
+                        model_reference: modelRef,
                         category: catSlug,
                         image: imgPath,
                         gallery: [imgPath]
