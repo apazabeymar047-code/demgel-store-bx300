@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Finalizar Pedido Demgel</title>
+    <meta name="description" content="Finaliza tu compra online de productos Demgel con precio especial y reserva garantizada por 30 minutos. Retiro en tienda.">
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-checkout">
+
+    <!-- ── Header Minimalista ── -->
+    <header id="main-header" class="scrolled">
+        <nav class="container">
+            <a href="index.html" class="logo">
+                <span class="brand">Demgel<span>.</span></span>
+                <span class="tagline">Checkout Seguro</span>
+            </a>
+
+            <div class="nav-actions">
+                <a href="index.html" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                    <i class="fas fa-arrow-left"></i> Volver a la Tienda
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="checkout-section">
+        <div class="container">
+
+            <!-- Estado Vacío (si no hay productos) -->
+            <div id="checkout-empty" class="checkout-box" style="display: none; text-align: center; max-width: 550px; margin: 2rem auto;">
+                <i class="fas fa-shopping-cart" style="font-size: 3.5rem; color: rgba(255,255,255,0.1); margin-bottom: 1rem;"></i>
+                <h2 style="font-size: 1.6rem; margin-bottom: 0.5rem;">Tu carrito está vacío</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Para realizar un pedido y reservar tu precio especial, primero selecciona tus productos.</p>
+                <a href="index.html" class="btn-primary"><i class="fas fa-arrow-left"></i> Ver Catálogo de Productos</a>
+            </div>
+
+            <!-- Formulario de Checkout -->
+            <!-- Formulario de Checkout Simplificado 1-Clic -->
+            <div id="checkout-content" class="checkout-layout">
+                
+                <!-- Columna Izquierda: Datos y Pago -->
+                <div class="checkout-form-column">
+                    <form id="checkout-form" class="checkout-box glass-effect-premium">
+                        <div class="checkout-box__header">
+                            <div class="checkout-speed-badge">
+                                <i class="fas fa-bolt"></i> Compra Directa Rápida • Sin Registros
+                            </div>
+                            <h2 class="checkout-box__title" style="margin-top: 0.5rem;">
+                                <i class="fas fa-shopping-bag"></i> Finalizar Reserva Online
+                            </h2>
+                        </div>
+
+                        <!-- 1. Campo Único: Nombre Opcional -->
+                        <div class="form-group" style="margin-bottom: 1.8rem;">
+                            <label class="form-label" for="cust-name" style="font-size: 0.95rem;">
+                                <i class="fas fa-user" style="color: var(--primary); margin-right: 6px;"></i>
+                                Nombre de quien retira <span class="opt" style="color: var(--text-muted); font-weight: 400;">(Opcional)</span>
+                            </label>
+                            <div class="input-glow-wrap">
+                                <input type="text" id="cust-name" class="form-input" placeholder="Ej: Carlos (dejar en blanco si prefieres anónimo)" autocomplete="name">
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; display: block;">
+                                <i class="fas fa-info-circle" style="color: var(--primary);"></i> Si lo dejas en blanco, tu pedido se reservará automáticamente con tu código <strong>DG-XXXX</strong>.
+                            </span>
+                        </div>
+
+                        <!-- 2. Método de Entrega Único -->
+                        <div class="form-group" style="margin-bottom: 1.8rem;">
+                            <label class="form-label" style="font-size: 0.95rem;">
+                                <i class="fas fa-store" style="color: var(--primary); margin-right: 6px;"></i> Modalidad de Entrega
+                            </label>
+                            <div class="pickup-banner-fixed">
+                                <div class="pickup-icon-glow">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div>
+                                    <strong style="color: white; font-size: 1rem;">Retiro Presencial en Tienda Demgel</strong>
+                                    <span style="display: block; color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
+                                        Stock asegurado al instante al mejor precio de internet.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Selección de Método de Pago -->
+                        <div class="form-group" style="margin-bottom: 1.8rem;">
+                            <label class="form-label" style="font-size: 0.95rem;">
+                                <i class="fas fa-credit-card" style="color: var(--primary); margin-right: 6px;"></i>
+                                Elige cómo pagarás en tienda o transferencia
+                            </label>
+                            <div class="payment-methods-grid">
+                                <div class="payment-method-card active" data-method="transferencia">
+                                    <div class="method-badge">Más Usado</div>
+                                    <i class="fas fa-university"></i>
+                                    <strong>Transferencia</strong>
+                                    <span>Banco / Cuenta RUT / App</span>
+                                </div>
+                                <div class="payment-method-card" data-method="cajavecina">
+                                    <i class="fas fa-store-alt"></i>
+                                    <strong>CajaVecina</strong>
+                                    <span>Depósito en Efectivo</span>
+                                </div>
+                            </div>
+
+                            <div id="payment-instructions-preview" class="payment-instructions-preview">
+                                <!-- Inyectado dinámicamente por JS desde ConfigService -->
+                            </div>
+                        </div>
+
+                        <div class="checkout-timer-alert">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <strong>Reserva por 30 Minutos:</strong> Tu stock queda reservado inmediatamente para recibir tu pago.
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-confirm-order" class="btn-primary btn-confirm-order">
+                            <i class="fas fa-check-circle"></i> CONFIRMAR Y RESERVAR MI STOCK <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Columna Derecha: Resumen de Compra -->
+                <div class="checkout-summary-column">
+                    <div class="checkout-box checkout-summary-card">
+                        <div class="checkout-box__header">
+                            <h3 class="checkout-box__title">
+                                <i class="fas fa-receipt"></i> Resumen de Compra
+                            </h3>
+                        </div>
+
+                        <!-- Lista de Ítems del Carrito -->
+                        <div id="checkout-items-list" class="checkout-items-list">
+                            <!-- Inyectado por JS -->
+                        </div>
+
+                        <!-- Desglose Económico -->
+                        <div class="cart-summary-line">
+                            <span>Precio normal en mostrador:</span>
+                            <span id="summary-store-total">$0</span>
+                        </div>
+                        <div class="cart-summary-line cart-summary-line--savings">
+                            <span><i class="fas fa-tag"></i> Ahorro especial online:</span>
+                            <span id="summary-savings-total">$0</span>
+                        </div>
+                        <div class="cart-summary-total">
+                            <span>TOTAL A PAGAR:</span>
+                            <span id="summary-online-total">$0</span>
+                        </div>
+
+                        <div style="text-align: center; color: var(--accent-green); font-size: 0.85rem; font-weight: 700;">
+                            <i class="fas fa-check-circle"></i> Retiro directo en tienda sin costo de despacho
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ====== FOOTER ====== -->
+    <footer>
+        <div class="container" style="text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">
+                &copy; 2026 Demgel Store • Reserva de stock protegida por 30 minutos.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/services/configService.js"></script>
+    <script src="js/services/telegramService.js"></script>
+    <script src="js/services/orderService.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            DemgelAnalytics.initCampaignTracking();
+
+            // Sincronizar catálogo para garantizar correspondencia de IDs
+            if (typeof syncCatalogWithSupabase === "function") {
+                await syncCatalogWithSupabase();
+            }
+
+            DemgelCart.init();
+
+            // Cargar configuración de tienda desde Supabase si está disponible
+            if (DemgelConfigService && DemgelConfigService.loadConfig) {
+                await DemgelConfigService.loadConfig();
+            }
+
+            const cartSummary = DemgelCart.getSummary();
+            const emptyBox = document.getElementById("checkout-empty");
+            const contentBox = document.getElementById("checkout-content");
+
+            // 1. Validar carrito no vacío
+            if (cartSummary.totalItems === 0) {
+                if (emptyBox) emptyBox.style.display = "block";
+                if (contentBox) contentBox.style.display = "none";
+                return;
+            } else {
+                if (emptyBox) emptyBox.style.display = "none";
+                if (contentBox) contentBox.style.display = "grid";
+            }
+
+            // Registrar evento de checkout iniciado
+            DemgelAnalytics.trackCheckoutStarted(cartSummary);
+
+            // 2. Renderizar ítems del resumen
+            renderCheckoutSummary(cartSummary);
+
+            // 3. Configurar método de pago inicial
+            let selectedMethod = "transferencia";
+            updatePaymentInstructions(selectedMethod);
+
+            const methodCards = document.querySelectorAll(".payment-method-card");
+            methodCards.forEach(card => {
+                card.addEventListener("click", () => {
+                    methodCards.forEach(c => c.classList.remove("active"));
+                    card.classList.add("active");
+                    selectedMethod = card.getAttribute("data-method");
+                    DemgelAnalytics.trackPaymentMethodSelected(selectedMethod);
+                    updatePaymentInstructions(selectedMethod);
+                });
+            });
+
+            // 4. Generar llave de idempotencia única para este formulario
+            const idempotencyKey = "idemp_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString());
+
+            // 5. Manejar envío del formulario
+            const form = document.getElementById("checkout-form");
+            const submitBtn = document.getElementById("btn-confirm-order");
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const rawName = document.getElementById("cust-name") ? document.getElementById("cust-name").value.trim() : "";
+                const finalName = rawName || "Cliente Demgel";
+                const finalPhone = "Sin Teléfono";
+                const finalEmail = "";
+
+                // Deshabilitar botón inmediatamente (Anti doble clic)
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reservando tu Stock...';
+
+                // Registrar evento de datos completados
+                DemgelAnalytics.trackCustomerCompleted(finalPhone);
+
+                // Armar payload de la orden
+                const orderPayload = {
+                    customer_name: finalName,
+                    customer_phone: finalPhone,
+                    customer_email: finalEmail,
+                    payment_method: selectedMethod,
+                    items: cartSummary.items,
+                    idempotency_key: idempotencyKey,
+                    source_campaign: DemgelAnalytics.getCampaignSource()
+                };
+
+                // Invocar servicio de órdenes (Supabase RPC con fallback)
+                const result = await DemgelOrderService.createOrder(orderPayload);
+
+                if (!result.success) {
+                    alert("Error al crear el pedido: " + (result.message || result.error));
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-lock"></i> CONFIRMAR PEDIDO';
+                    return;
+                }
+
+                // Registrar evento analítico de orden creada
+                DemgelAnalytics.trackOrderCreated(result.order);
+
+                // Notificar instantáneamente a Telegram Bot
+                if (typeof DemgelTelegramService !== "undefined") {
+                    DemgelTelegramService.notifyNewOrder(result.order).catch(err => {
+                        console.warn("Error al enviar notificación a Telegram:", err);
+                    });
+                }
+
+                // Vaciar el carrito ÚNICAMENTE tras crear con éxito el pedido
+                DemgelCart.clearCart();
+
+                // Redirigir a la pantalla del pedido con su access_token seguro
+                window.location.href = `pedido.html?id=${result.order.id}&token=${result.order.access_token}`;
+            });
+        });
+
+
+        function renderCheckoutSummary(summary) {
+            const list = document.getElementById("checkout-items-list");
+            const elStore = document.getElementById("summary-store-total");
+            const elOnline = document.getElementById("summary-online-total");
+            const elSavings = document.getElementById("summary-savings-total");
+
+            let html = "";
+            summary.items.forEach(it => {
+                const prod = getProductById(it.productId);
+                if (!prod) return;
+                html += `
+                    <div class="checkout-item-row">
+                        <img src="${prod.image}" alt="${prod.name}">
+                        <div class="checkout-item-details">
+                            <div class="checkout-item-title">${prod.name}</div>
+                            <div class="checkout-item-qty">Cantidad: ${it.quantity}</div>
+                        </div>
+                        <div class="checkout-item-price">${formatCLP(prod.online_price * it.quantity)}</div>
+                    </div>
+                `;
+            });
+
+            if (list) list.innerHTML = html;
+            if (elStore) elStore.textContent = formatCLP(summary.totalStore);
+            if (elOnline) elOnline.textContent = formatCLP(summary.totalOnline);
+            if (elSavings) elSavings.textContent = formatCLP(summary.totalSavings);
+        }
+
+        function updatePaymentInstructions(method) {
+            const previewBox = document.getElementById("payment-instructions-preview");
+            if (!previewBox) return;
+
+            if (method === "transferencia") {
+                const bank = DemgelConfigService.getBankDetails();
+                previewBox.innerHTML = `
+                    <strong><i class="fas fa-info-circle"></i> Instrucciones de Transferencia:</strong><br>
+                    ${bank.instructions}<br>
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block; margin-top: 6px;">
+                        • Banco: <em>${bank.bank_name}</em> | Cuenta: <em>${bank.account_number}</em>
+                    </span>
+                    <span style="font-size: 0.8rem; color: var(--primary-light); display: block; margin-top: 4px;">
+                        Los datos completos se mostrarán en la siguiente pantalla para realizar la transferencia.
+                    </span>
+                `;
+            } else {
+                const caja = DemgelConfigService.getCajaVecinaInstructions();
+                previewBox.innerHTML = `
+                    <strong><i class="fas fa-info-circle"></i> Pago por CajaVecina:</strong><br>
+                    ${caja.instructions}<br>
+                    <span style="font-size: 0.8rem; color: var(--primary-light); display: block; margin-top: 6px;">
+                        Podrás acercarte a tu CajaVecina más cercana con el número de pedido para pagar en efectivo.
+                    </span>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
