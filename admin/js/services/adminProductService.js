@@ -64,9 +64,23 @@ const AdminProductService = (function() {
                 };
             });
 
-            // Filtro por categoría
+            // Filtro por categoría flexible
             if (filters.category && filters.category !== "all") {
-                products = products.filter(p => p.category === filters.category);
+                const targetCat = filters.category.toString().toLowerCase().trim();
+                products = products.filter(p => {
+                    if (!p.category) return false;
+                    const pCat = p.category.toString().toLowerCase().trim();
+                    const pCatName = (p.category_name || "").toString().toLowerCase().trim();
+                    
+                    if (pCat === targetCat || pCatName === targetCat) return true;
+                    
+                    // Sinonimia para auto / vehículo / accesorios-para-auto
+                    const isAutoTarget = targetCat.includes("auto") || targetCat.includes("vehicul");
+                    const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul");
+                    if (isAutoTarget && isAutoProduct) return true;
+
+                    return false;
+                });
             }
 
             // Filtro por estado de stock (normal, low_stock, out_of_stock)
