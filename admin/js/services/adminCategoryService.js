@@ -21,31 +21,6 @@ const AdminCategoryService = (function() {
             const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
             if (!raw) {
                 localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
-            } else {
-                let list = JSON.parse(raw);
-                let changed = false;
-
-                // Fusionar automáticamente categorías base que falten en el dispositivo
-                DEFAULT_CATEGORIES.forEach(defCat => {
-                    if (!list.some(c => c.slug === defCat.slug || c.id === defCat.id)) {
-                        list.push(defCat);
-                        changed = true;
-                    }
-                });
-
-                list = list.map(c => {
-                    if (c.id === "auto" || c.slug === "auto" || c.slug === "accesorios-auto" || c.slug === "accesorios-para-auto") {
-                        if (c.name !== "Accesorios para Auto") {
-                            changed = true;
-                            return { ...c, name: "Accesorios para Auto" };
-                        }
-                    }
-                    return c;
-                });
-
-                if (changed) {
-                    localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
-                }
             }
         } catch (e) {
             console.warn("No se pudo inicializar categorías en localStorage:", e);
@@ -106,6 +81,7 @@ const AdminCategoryService = (function() {
             localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
 
             try {
+                window.dispatchEvent(new Event("storage"));
                 window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { category: newCategory } }));
             } catch (evErr) {}
 
@@ -141,6 +117,11 @@ const AdminCategoryService = (function() {
             list[idx] = updated;
             localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
 
+            try {
+                window.dispatchEvent(new Event("storage"));
+                window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { category: updated } }));
+            } catch (evErr) {}
+
             return {
                 success: true,
                 category: updated,
@@ -168,6 +149,7 @@ const AdminCategoryService = (function() {
             localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
 
             try {
+                window.dispatchEvent(new Event("storage"));
                 window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { deletedSlug: slug } }));
             } catch (evErr) {}
 
