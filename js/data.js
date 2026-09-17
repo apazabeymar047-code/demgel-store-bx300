@@ -294,7 +294,7 @@ function getProductById(id) {
     );
 }
 
-// Sincronización asíncrona con Supabase real
+// Sincronización asíncrona con Supabase real (Híbrido Resiliente)
 async function syncCatalogWithSupabase() {
     if (typeof DemgelSupabase !== "undefined") {
         try {
@@ -304,30 +304,67 @@ async function syncCatalogWithSupabase() {
             ]);
 
             if (remoteCats && remoteCats.length > 0) {
-                DEMGEL_CATEGORIES = [
-                    { id: "todos", name: "Todos", icon: "fa-border-all" },
-                    ...remoteCats.map(c => ({
-                        id: c.slug,
-                        name: c.name,
-                        icon: c.icon || "fa-tag",
-                        uuid: c.id
-                    }))
-                ];
+                const localActive = getActiveCategoriesList();
+                const mergedMap = new Map();
+                
+                // Preservar categorías locales activas
+                localActive.forEach(c => {
+                    const key = c.slug || c.id;
+                    mergedMap.set(key, { ...c, id: key });
+                });
+
+                // Fusionar categorías desde Supabase
+                remoteCats.forEach(c => {
+                    const key = c.slug || c.id;
+                    if (!mergedMap.has(key)) {
+                        mergedMap.set(key, {
+                            id: key,
+                            slug: key,
+                            name: c.name,
+                            icon: c.icon || "fa-tag",
+                            uuid: c.id
+                        });
+                    }
+                });
+
+                DEMGEL_CATEGORIES = Array.from(mergedMap.values());
             }
 
             if (remoteProds && remoteProds.length > 0) {
-                DEMGEL_PRODUCTS = remoteProds.map(p => {
+                const localProds = getActiveProductsList();
+                const prodMap = new Map();
+
+                // Preservar productos locales (incluyendo TV BOX D-N0301)
+                localProds.forEach(p => {
+                    prodMap.set(p.id, p);
+                });
+
+                // Fusionar productos de Supabase
+                remoteProds.forEach(p => {
                     const modelRef = (p.model_reference || p.model || "").toUpperCase();
                     let imgPath = p.image || p.main_image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
                     }
-                    return {
+                    
+                    let catSlug = (p.category && p.category.slug) ? p.category.slug : p.category;
+                    if (modelRef === "D-N0301" || (p.name || "").toLowerCase().includes("tv box")) {
+                        catSlug = "tvbox";
+                    }
+
+                    const formattedRemote = {
                         ...p,
+                        category: catSlug,
                         image: imgPath,
                         gallery: [imgPath]
                     };
+
+                    if (!prodMap.has(p.id)) {
+                        prodMap.set(p.id, formattedRemote);
+                    }
                 });
+
+                DEMGEL_PRODUCTS = Array.from(prodMap.values());
             }
 
             document.dispatchEvent(new CustomEvent("demgel:catalog_loaded", {
