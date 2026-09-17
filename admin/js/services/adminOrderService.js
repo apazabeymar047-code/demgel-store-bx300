@@ -271,30 +271,6 @@ const AdminOrderService = (function() {
         }
     }
 
-    function deleteOrder(orderId) {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY_ORDERS);
-            let orders = raw ? JSON.parse(raw) : [];
-            const orderToDelete = orders.find(o => o.id === orderId);
-            if (!orderToDelete) {
-                return { success: false, error: "NOT_FOUND", message: "El pedido no fue encontrado." };
-            }
-
-            orders = orders.filter(o => o.id !== orderId);
-            localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
-
-            logAdminEvent("ORDER_DELETED", orderId, { order_number: orderToDelete.order_number });
-
-            return {
-                success: true,
-                message: `Pedido "${orderToDelete.order_number}" eliminado correctamente.`
-            };
-        } catch (e) {
-            console.error("Error al eliminar pedido:", e);
-            return { success: false, error: "DELETE_ERROR", message: "Error al eliminar pedido." };
-        }
-    }
-
     return {
         ORDER_STATES,
         getOrders,
@@ -302,7 +278,6 @@ const AdminOrderService = (function() {
         checkOrderExpiration,
         changeOrderStatus,
         logAdminEvent,
-        getAdminEvents,
-        deleteOrder
+        getAdminEvents
     };
 })();
