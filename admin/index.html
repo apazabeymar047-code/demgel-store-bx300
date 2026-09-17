@@ -19,10 +19,10 @@
 </head>
 <body>
 
-    <!-- ── Banner de Seguridad y Modo Mock ── -->
+    <!-- ── Banner de Seguridad y Modo Híbrido ── -->
     <div class="admin-security-banner">
         <i class="fas fa-shield-alt"></i>
-        <span><strong>ENTORNO DE DEMOSTRACIÓN (MOCK / LOCAL):</strong> La seguridad real definitiva será gestionada en la fase de conexión mediante <strong>Supabase Auth + RLS + is_admin()</strong>.</span>
+        <span><strong>PANEL DE CONTROL DEMGEL:</strong> Conectado a <strong>Supabase DB Real + Storage + Telegram Bot (@demgel_bot)</strong> de forma síncrona.</span>
     </div>
 
     <!-- ── Header Superior ── -->
@@ -32,12 +32,14 @@
                 <a href="#dashboard" class="admin-brand">
                     Demgel<span>.</span> Admin
                 </a>
-                <span class="admin-demo-badge">ADMIN DEMO</span>
+                <span class="admin-demo-badge">
+                    <span class="live-pulse-dot"></span> EN VIVO
+                </span>
             </div>
 
             <div class="admin-header-actions">
                 <a href="../index.html" target="_blank" class="btn-store-link">
-                    <i class="fas fa-external-link-alt"></i> Ver Tienda Pública
+                    <i class="fas fa-store"></i> Ver Tienda Pública &nearr;
                 </a>
             </div>
         </div>
@@ -47,7 +49,7 @@
     <nav class="admin-tabs-bar">
         <div class="admin-tabs-container">
             <button class="admin-tab-btn active" data-target="#dashboard">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
+                <i class="fas fa-chart-line"></i> Dashboard
             </button>
             <button class="admin-tab-btn" data-target="#pedidos">
                 <i class="fas fa-shopping-bag"></i> Pedidos en Vivo
@@ -74,8 +76,24 @@
             <div class="section-header-admin">
                 <div>
                     <h1 class="section-title-admin"><i class="fas fa-tachometer-alt"></i> Dashboard Principal</h1>
-                    <p class="section-desc-admin">Resumen operativo en tiempo real de la tienda Demgel (Datos Locales Demo).</p>
+                    <p class="section-desc-admin">Resumen operativo en tiempo real de la tienda Demgel (Conectado con Supabase & LocalStorage).</p>
                 </div>
+            </div>
+
+            <!-- Barra de Acciones Rápidas (Quick Actions Bar) -->
+            <div class="quick-actions-bar">
+                <button class="btn-action btn-action--primary" onclick="window.location.hash='#productos'; setTimeout(openProductCreateModal, 100);">
+                    <i class="fas fa-plus-circle"></i> Nuevo Producto
+                </button>
+                <button class="btn-action" onclick="window.location.hash='#categorias'; setTimeout(openCategoryModal, 100);">
+                    <i class="fas fa-folder-plus"></i> Nueva Categoría
+                </button>
+                <button class="btn-action" onclick="window.location.hash='#pedidos';">
+                    <i class="fas fa-shopping-bag"></i> Ver Pedidos
+                </button>
+                <a href="../index.html" target="_blank" class="btn-action">
+                    <i class="fas fa-external-link-alt"></i> Ir a la Tienda Web
+                </a>
             </div>
 
             <!-- Grilla de KPIs -->
@@ -743,60 +761,6 @@
                 <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
                 <button type="button" id="btn-confirm-delete-category" class="btn-action btn-action--danger">
                     Continuar al Paso 2 &rarr;
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL: ELIMINACIÓN DE PRODUCTO (DOBLE CONFIRMACIÓN) -->
-    <!-- ========================================== -->
-    <div id="modal-delete-product" class="modal-overlay">
-        <div class="modal-card" style="max-width: 520px; border: 1px solid rgba(239, 68, 68, 0.4);">
-            <div class="modal-header">
-                <div class="modal-title" id="delete-product-modal-title" style="color: var(--status-cancelled);">
-                    <i class="fas fa-exclamation-triangle"></i> Confirmación 1/2: Eliminar Producto
-                </div>
-                <button class="btn-close-modal">&times;</button>
-            </div>
-
-            <input type="hidden" id="delete-product-target-id">
-
-            <div id="delete-product-modal-body" style="margin: 1.2rem 0; font-size: 0.92rem; color: var(--text-muted); line-height: 1.5;">
-                <!-- Inyectado dinámicamente -->
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
-                <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
-                <button type="button" id="btn-confirm-delete-product" class="btn-action btn-action--danger">
-                    Continuar al Paso 2 &rarr;
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL: ELIMINACIÓN DE PEDIDO -->
-    <!-- ========================================== -->
-    <div id="modal-delete-order" class="modal-overlay">
-        <div class="modal-card" style="max-width: 500px; border: 1px solid rgba(239, 68, 68, 0.4);">
-            <div class="modal-header">
-                <div class="modal-title" style="color: var(--status-cancelled);">
-                    <i class="fas fa-trash-alt"></i> Eliminar Registro de Pedido
-                </div>
-                <button class="btn-close-modal">&times;</button>
-            </div>
-
-            <input type="hidden" id="delete-order-target-id">
-
-            <div id="delete-order-modal-body" style="margin: 1.2rem 0; font-size: 0.92rem; color: var(--text-muted); line-height: 1.5;">
-                <!-- Inyectado dinámicamente -->
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
-                <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
-                <button type="button" id="btn-confirm-delete-order-action" class="btn-action btn-action--danger">
-                    <i class="fas fa-trash-alt"></i> Eliminar Pedido Definitivamente
                 </button>
             </div>
         </div>
