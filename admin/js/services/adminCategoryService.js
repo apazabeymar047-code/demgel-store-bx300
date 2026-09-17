@@ -31,9 +31,16 @@ const AdminCategoryService = (function() {
         initCategories();
         try {
             const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
-            const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
-            let list = raw ? JSON.parse(raw) : DEFAULT_CATEGORIES;
-            return list.filter(c => c.is_active !== false && !deletedList.includes(c.slug) && !deletedList.includes(c.id));
+            const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]").map(s => s.toLowerCase());
+            let list = raw ? JSON.parse(raw) : [...DEFAULT_CATEGORIES];
+            
+            return list.filter(c => {
+                if (!c || c.is_active === false) return false;
+                const cSlug = (c.slug || "").toLowerCase();
+                const cId = (c.id || "").toLowerCase();
+                const cName = (c.name || "").toLowerCase();
+                return !deletedList.includes(cSlug) && !deletedList.includes(cId) && !deletedList.includes(cName);
+            });
         } catch (e) {
             console.error("Error al obtener categorías:", e);
         }
@@ -44,13 +51,16 @@ const AdminCategoryService = (function() {
         if (!slug) return null;
         const list = getCategories();
         const s = slug.toString().toLowerCase().trim();
-        return list.find(c => 
-            c.slug.toLowerCase() === s || 
-            c.id.toLowerCase() === s || 
-            c.name.toLowerCase() === s ||
-            (s.includes("auto") && (c.slug === "auto" || c.slug === "accesorios-para-auto" || c.slug === "accesorios-auto")) ||
-            (s.includes("vehiculo") && c.slug === "auto")
-        ) || null;
+        return list.find(c => {
+            const cSlug = (c.slug || "").toLowerCase();
+            const cId = (c.id || "").toLowerCase();
+            const cName = (c.name || "").toLowerCase();
+            return cSlug === s || cId === s || cName === s ||
+                (s.includes("auto") && (cSlug.includes("auto") || cId.includes("auto"))) ||
+                (s.includes("parlante") && (cSlug.includes("parlante") || cId.includes("parlante"))) ||
+                (s.includes("tvbox") && (cSlug.includes("tvbox") || cId.includes("tvbox"))) ||
+                (s.includes("otros") && (cSlug.includes("otros") || cId.includes("otros")));
+        }) || null;
     }
 
     function createCategory(data) {
@@ -63,13 +73,13 @@ const AdminCategoryService = (function() {
             const icon = data.icon || "fa-tag";
             const description = (data.description || "").trim();
 
-            if (list.some(c => c.slug === slug)) {
+            if (list.some(c => (c.slug || "").toLowerCase() === slug.toLowerCase())) {
                 return { success: false, error: "SLUG_DUPLICADO", message: `La categoría con identificador "${slug}" ya existe.` };
             }
 
-            // Si estaba en la lista de eliminadas, removerla de la lista de eliminadas
+            // Si estaba en la lista de eliminadas, removerla de la lista negra
             let deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
-            deletedList = deletedList.filter(s => s !== slug && s !== name.toLowerCase());
+            deletedList = deletedList.filter(s => (s || "").toLowerCase() !== slug.toLowerCase() && (s || "").toLowerCase() !== name.toLowerCase());
             localStorage.setItem("demgel_deleted_categories", JSON.stringify(deletedList));
 
             const newCategory = {
@@ -82,8 +92,19 @@ const AdminCategoryService = (function() {
                 created_at: new Date().toISOString()
             };
 
-            list.push(newCategory);
-            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+            // Asegurar que leemos el raw array para añadir la nueva categoría
+            let rawList = JSON.parse(localStorage.getItem(STORAGE_KEY_CATEGORIES) || "[]");
+            if (rawList.length === 0) rawList = [...DEFAULT_CATEGORIES];
+
+            // Reemplazar o añadir
+            const existingIdx = rawList.findIndex(c => (c.slug || "").toLowerCase() === slug.toLowerCase());
+            if (existingIdx !== -1) {
+                rawList[existingIdx] = newCategory;
+            } else {
+                rawList.push(newCategory);
+            }
+
+            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(rawList));
 
             try {
                 window.dispatchEvent(new Event("storage"));
@@ -104,13 +125,16 @@ const AdminCategoryService = (function() {
     function updateCategory(slug, updateData) {
         initCategories();
         try {
-            let list = getCategories();
-            const idx = list.findIndex(c => c.slug === slug || c.id === slug);
+            let rawList = JSON.parse(localStorage.getItem(STORAGE_KEY_CATEGORIES) || "[]");
+            if (rawList.length === 0) rawList = [...DEFAULT_CATEGORIES];
+
+            const targetLower = slug.toString().toLowerCase();
+            const idx = rawList.findIndex(c => (c.slug || "").toLowerCase() === targetLower || (c.id || "").toLowerCase() === targetLower);
             if (idx === -1) {
                 return { success: false, error: "NOT_FOUND", message: "Categoría no encontrada." };
             }
 
-            const current = list[idx];
+            const current = rawList[idx];
             const updated = {
                 ...current,
                 name: updateData.name !== undefined ? updateData.name.trim() : current.name,
@@ -119,8 +143,8 @@ const AdminCategoryService = (function() {
                 is_active: updateData.is_active !== undefined ? Boolean(updateData.is_active) : current.is_active
             };
 
-            list[idx] = updated;
-            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+            rawList[idx] = updated;
+            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(rawList));
 
             try {
                 window.dispatchEvent(new Event("storage"));
@@ -141,23 +165,55 @@ const AdminCategoryService = (function() {
     function deleteCategory(slug) {
         initCategories();
         try {
-            let list = getCategories();
-            const catToDelete = getCategoryBySlug(slug);
-            if (!catToDelete) {
-                return { success: false, error: "NOT_FOUND", message: "La categoría especificada no existe." };
-            }
-            if (catToDelete.slug === "todos" || catToDelete.id === "todos") {
+            const targetLower = slug.toString().toLowerCase().trim();
+            if (targetLower === "todos") {
                 return { success: false, error: "CANNOT_DELETE_TODOS", message: "La categoría principal 'Todos' no se puede eliminar." };
             }
 
-            list = list.filter(c => c.slug !== catToDelete.slug && c.id !== catToDelete.id);
-            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+            let rawList = JSON.parse(localStorage.getItem(STORAGE_KEY_CATEGORIES) || "[]");
+            if (rawList.length === 0) rawList = [...DEFAULT_CATEGORIES];
 
-            // Registrar slug e ID en la lista negra de categorías eliminadas
+            const catToDelete = getCategoryBySlug(slug) || { id: slug, slug: slug, name: slug };
+
+            // Filtrar eliminando por slug, id y nombre (sin importar variaciones de mayúsculas/minúsculas o alias)
+            const updatedList = rawList.filter(c => {
+                const cSlug = (c.slug || "").toLowerCase();
+                const cId = (c.id || "").toLowerCase();
+                const cName = (c.name || "").toLowerCase();
+                
+                if (cSlug === targetLower || cId === targetLower || cName === targetLower) return false;
+                if (catToDelete) {
+                    if (cSlug === (catToDelete.slug || "").toLowerCase()) return false;
+                    if (cId === (catToDelete.id || "").toLowerCase()) return false;
+                    if (cName === (catToDelete.name || "").toLowerCase()) return false;
+                }
+                return true;
+            });
+
+            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(updatedList));
+
+            // Agregar a la lista negra permanente
             let deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
-            if (!deletedList.includes(catToDelete.slug)) deletedList.push(catToDelete.slug);
-            if (!deletedList.includes(catToDelete.id)) deletedList.push(catToDelete.id);
+            [targetLower, catToDelete.slug, catToDelete.id, catToDelete.name].forEach(item => {
+                if (item) {
+                    const itemLower = item.toString().toLowerCase().trim();
+                    if (!deletedList.includes(itemLower)) deletedList.push(itemLower);
+                }
+            });
             localStorage.setItem("demgel_deleted_categories", JSON.stringify(deletedList));
+
+            // Intentar desactivar en Supabase si el cliente Supabase está presente
+            if (typeof DemgelSupabase !== "undefined" && DemgelSupabase.SUPABASE_URL) {
+                try {
+                    const SUPABASE_URL = "https://dtlzzvdyqhebdsftqckc.supabase.co";
+                    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0bHp6dmR5cWhlYmRzZnRxY2tjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjM3NjksImV4cCI6MjEwNTEzOTc2OX0.6N-3Z244wwPw0Hk7A3VjV45OjECW_QVCLzuRoekxmSw";
+                    fetch(`${SUPABASE_URL}/rest/v1/categories?slug=eq.${catToDelete.slug || slug}`, {
+                        method: "PATCH",
+                        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+                        body: JSON.stringify({ is_active: false })
+                    }).catch(() => {});
+                } catch (e) {}
+            }
 
             try {
                 window.dispatchEvent(new Event("storage"));
