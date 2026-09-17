@@ -524,14 +524,33 @@ function renderProductsView() {
                     ${p.is_featured ? '<span style="font-size:0.75rem; color:var(--accent-cyan);">★ Destacado</span>' : ''}
                 </td>
                 <td>
-                    <button class="btn-action" onclick="openProductEditModal('${p.id}')">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn-action" onclick="openProductEditModal('${p.id}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn-action btn-action--danger" onclick="confirmDeleteProduct('${p.id}')" title="Eliminar producto">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     });
     tbody.innerHTML = html;
+}
+
+function confirmDeleteProduct(productId) {
+    const prod = AdminProductService.getProductById(productId);
+    const prodName = prod ? prod.name : productId;
+    if (confirm(`¿Estás seguro de eliminar el producto "${prodName}" del catálogo? esta acción se reflejará en la tienda.`)) {
+        const res = AdminProductService.deleteProduct(productId);
+        if (res.success) {
+            renderProductsView();
+            if (typeof renderDashboardView === "function") renderDashboardView();
+        } else {
+            alert(res.message || "Error al eliminar el producto.");
+        }
+    }
 }
 
 let activeCreateImageData = null;
