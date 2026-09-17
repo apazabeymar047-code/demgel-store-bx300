@@ -95,6 +95,10 @@ const AdminCategoryService = (function() {
             list.push(newCategory);
             localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
 
+            try {
+                window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { category: newCategory } }));
+            } catch (evErr) {}
+
             return {
                 success: true,
                 category: newCategory,
