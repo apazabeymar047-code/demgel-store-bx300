@@ -290,11 +290,47 @@ const AdminProductService = (function() {
         }
     }
 
+    // 7. Eliminar producto del catálogo
+    function deleteProduct(productId) {
+        initProducts();
+        try {
+            let products = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || "[]");
+            const initialCount = products.length;
+            const filtered = products.filter(p => p.id !== productId && p.model_reference !== productId);
+            
+            if (filtered.length === initialCount) {
+                return { success: false, message: "Producto no encontrado." };
+            }
+
+            localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(filtered));
+
+            // Actualizar stockMap
+            const stockMap = JSON.parse(localStorage.getItem(STORAGE_KEY_STOCK) || "{}");
+            delete stockMap[productId];
+            localStorage.setItem(STORAGE_KEY_STOCK, JSON.stringify(stockMap));
+
+            // Notificar cambio
+            if (typeof window !== "undefined") {
+                window.dispatchEvent(new Event("storage"));
+                window.dispatchEvent(new CustomEvent("demgel:product_updated"));
+            }
+
+            return {
+                success: true,
+                message: "Producto eliminado correctamente del catálogo."
+            };
+        } catch (e) {
+            console.error("Error al eliminar producto:", e);
+            return { success: false, error: "DELETE_ERROR", message: "Error interno al eliminar el producto." };
+        }
+    }
+
     return {
         initProducts,
         getProducts,
         getProductById,
         updateProduct,
-        createProduct
+        createProduct,
+        deleteProduct
     };
 })();
