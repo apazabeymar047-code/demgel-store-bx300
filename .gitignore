@@ -1,5 +1,6 @@
 # Temporary files & IDE
 .gemini/
+.mcp.json
 __pycache__/
 *.log
 .DS_Store
