@@ -38,6 +38,23 @@ document.addEventListener("demgel:catalog_loaded", () => {
     renderProducts(activeCat);
 });
 
+// Sincronización en tiempo real cuando se crean, editan o eliminan categorías/productos desde el Admin Panel
+function refreshCatalogUI() {
+    renderCategories();
+    const activeBtn = document.querySelector(".category-pill.active");
+    const activeCat = activeBtn ? activeBtn.getAttribute("data-category") : "todos";
+    renderProducts(activeCat);
+}
+
+window.addEventListener("storage", (e) => {
+    if (!e || !e.key || e.key === "demgel_mock_categories" || e.key === "demgel_mock_products") {
+        refreshCatalogUI();
+    }
+});
+
+document.addEventListener("demgel:category_updated", refreshCatalogUI);
+document.addEventListener("demgel:product_updated", refreshCatalogUI);
+
 
 // Banner dinámico si el usuario llegó desde Flyer QR
 function checkCampaignBanner(campaign) {
