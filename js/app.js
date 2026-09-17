@@ -80,11 +80,22 @@ function renderCategories() {
 
     container.innerHTML = html;
 
-    // Eventos de filtrado
+    // Resetear scroll al inicio en vista móvil
+    try {
+        container.scrollLeft = 0;
+    } catch (e) {}
+
+    // Eventos de filtrado con centrado suave en móvil
     container.querySelectorAll(".category-pill").forEach(btn => {
         btn.addEventListener("click", () => {
             container.querySelectorAll(".category-pill").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
+
+            // Centrar suavemente el botón en pantalla móvil
+            try {
+                btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            } catch (e) {}
+
             const catId = btn.getAttribute("data-category");
             renderProducts(catId);
         });
