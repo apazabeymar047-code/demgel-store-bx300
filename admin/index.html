@@ -55,6 +55,9 @@
             <button class="admin-tab-btn" data-target="#productos">
                 <i class="fas fa-boxes"></i> Productos y Stock
             </button>
+            <button class="admin-tab-btn" data-target="#categorias">
+                <i class="fas fa-tags"></i> Categorías
+            </button>
             <button class="admin-tab-btn" data-target="#configuracion">
                 <i class="fas fa-cog"></i> Configuración Tienda
             </button>
@@ -285,7 +288,27 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- 4. VISTA: CONFIGURACIÓN -->
+        <!-- 4. VISTA: GESTIÓN DE CATEGORÍAS -->
+        <!-- ========================================== -->
+        <section id="view-categorias" class="admin-view">
+            <div class="section-header-admin" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 class="section-title-admin"><i class="fas fa-tags"></i> Gestión de Categorías</h1>
+                    <p class="section-desc-admin">Crea, edita y organiza las categorías de productos de la tienda con iconos e identificadores personalizados.</p>
+                </div>
+                <button type="button" id="btn-open-create-category" class="btn-action btn-action--primary" style="padding: 0.8rem 1.4rem; font-size: 0.95rem; font-weight: 700;">
+                    <i class="fas fa-plus-circle"></i> + Crear Nueva Categoría
+                </button>
+            </div>
+
+            <!-- Grilla de Tarjetas de Categoría -->
+            <div id="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <!-- Inyectado por adminApp.js -->
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 5. VISTA: CONFIGURACIÓN -->
         <!-- ========================================== -->
         <section id="view-configuracion" class="admin-view">
             <div class="section-header-admin">
@@ -642,6 +665,63 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: CREACIÓN Y EDICIÓN DE CATEGORÍA -->
+    <!-- ========================================== -->
+    <div id="modal-create-category" class="modal-overlay">
+        <div class="modal-card" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-category-title">
+                    <i class="fas fa-folder-plus" style="color: var(--primary-light);"></i> Publicar Nueva Categoría
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+
+            <form id="create-category-form">
+                <input type="hidden" id="category-original-slug">
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre de la Categoría *</label>
+                    <input type="text" id="category-name-input" class="admin-input" style="padding-left: 1rem;" placeholder="Ej: Auriculares & Audífonos" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Identificador Slug (URL)</label>
+                        <input type="text" id="category-slug-input" class="admin-input" style="padding-left: 1rem;" placeholder="Ej: auriculares">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Icono FontAwesome</label>
+                        <select id="category-icon-input" class="admin-select" style="width: 100%;">
+                            <option value="fa-headphones">🎧 Headphones (fa-headphones)</option>
+                            <option value="fa-plug">🔌 Enchufe (fa-plug)</option>
+                            <option value="fa-bolt">⚡ Carga Rápida (fa-bolt)</option>
+                            <option value="fa-car">🚗 Auto / Vehículo (fa-car)</option>
+                            <option value="fa-volume-high">🔊 Parlantes (fa-volume-high)</option>
+                            <option value="fa-tv">📺 TV / Pantallas (fa-tv)</option>
+                            <option value="fa-mobile-alt">📱 Celulares (fa-mobile-alt)</option>
+                            <option value="fa-gamepad">🎮 Consolas / Gaming (fa-gamepad)</option>
+                            <option value="fa-box-open">📦 Accesorios (fa-box-open)</option>
+                            <option value="fa-tag">🏷️ Etiqueta (fa-tag)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.2rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Descripción Corta</label>
+                    <textarea id="category-desc-input" class="admin-input" style="padding: 0.8rem; border-radius: var(--radius-sm); min-height: 60px; resize: vertical;" placeholder="Descripción de los productos incluidos en esta categoría..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn-action btn-action--primary">
+                        <i class="fas fa-save"></i> Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL: CREACIÓN DE NUEVO PRODUCTO -->
     <!-- ========================================== -->
     <div id="modal-create-product" class="modal-overlay">
@@ -830,6 +910,7 @@
     <script src="../js/services/telegramService.js"></script>
     <script src="js/services/adminOrderService.js"></script>
     <script src="js/services/adminProductService.js"></script>
+    <script src="js/services/adminCategoryService.js"></script>
     <script src="js/services/adminConfigService.js"></script>
     <script src="js/services/adminAnalyticsService.js"></script>
     <script src="js/adminApp.js"></script>
