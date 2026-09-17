@@ -12,7 +12,8 @@ const AdminCategoryService = (function() {
         { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt", description: "Cables de carga rápida Tipo-C, Lightning y USB", is_active: true },
         { id: "auto", name: "Accesorios para Auto", slug: "auto", icon: "fa-car", description: "Cargadores de cigarrera y soportes para vehículos", is_active: true },
         { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high", description: "Parlantes bluetooth portátiles con luces RGB", is_active: true },
-        { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", description: "TV Box 8K, adaptadores y accesorios varios", is_active: true }
+        { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", description: "Adaptadores y accesorios varios", is_active: true },
+        { id: "tvbox", name: "TV BOX", slug: "tvbox", icon: "fa-tv", description: "Convertidores Smart TV 8K y decodificadores", is_active: true }
     ];
 
     function initCategories() {
@@ -21,9 +22,17 @@ const AdminCategoryService = (function() {
             if (!raw) {
                 localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
             } else {
-                // Actualizar nombres existentes si usan la versión previa
                 let list = JSON.parse(raw);
                 let changed = false;
+
+                // Fusionar automáticamente categorías base que falten en el dispositivo
+                DEFAULT_CATEGORIES.forEach(defCat => {
+                    if (!list.some(c => c.slug === defCat.slug || c.id === defCat.id)) {
+                        list.push(defCat);
+                        changed = true;
+                    }
+                });
+
                 list = list.map(c => {
                     if (c.id === "auto" || c.slug === "auto" || c.slug === "accesorios-auto" || c.slug === "accesorios-para-auto") {
                         if (c.name !== "Accesorios para Auto") {
@@ -33,6 +42,7 @@ const AdminCategoryService = (function() {
                     }
                     return c;
                 });
+
                 if (changed) {
                     localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
                 }
