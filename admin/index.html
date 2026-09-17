@@ -722,6 +722,33 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: ELIMINACIÓN DE CATEGORÍA (DOBLE CONFIRMACIÓN) -->
+    <!-- ========================================== -->
+    <div id="modal-delete-category" class="modal-overlay">
+        <div class="modal-card" style="max-width: 520px; border: 1px solid rgba(239, 68, 68, 0.4);">
+            <div class="modal-header">
+                <div class="modal-title" id="delete-category-modal-title" style="color: var(--status-cancelled);">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmación 1/2: Eliminar Categoría
+                </div>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+
+            <input type="hidden" id="delete-category-target-slug">
+
+            <div id="delete-category-modal-body" style="margin: 1.2rem 0; font-size: 0.92rem; color: var(--text-muted); line-height: 1.5;">
+                <!-- Inyectado dinámicamente según el paso 1 o 2 -->
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                <button type="button" class="btn-action btn-modal-cancel">Cancelar</button>
+                <button type="button" id="btn-confirm-delete-category" class="btn-action btn-action--danger">
+                    Continuar al Paso 2 &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL: CREACIÓN DE NUEVO PRODUCTO -->
     <!-- ========================================== -->
     <div id="modal-create-product" class="modal-overlay">
