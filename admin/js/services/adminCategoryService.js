@@ -31,9 +31,9 @@ const AdminCategoryService = (function() {
         initCategories();
         try {
             const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
-            if (raw) {
-                return JSON.parse(raw);
-            }
+            const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
+            let list = raw ? JSON.parse(raw) : DEFAULT_CATEGORIES;
+            return list.filter(c => c.is_active !== false && !deletedList.includes(c.slug) && !deletedList.includes(c.id));
         } catch (e) {
             console.error("Error al obtener categorías:", e);
         }
@@ -66,6 +66,11 @@ const AdminCategoryService = (function() {
             if (list.some(c => c.slug === slug)) {
                 return { success: false, error: "SLUG_DUPLICADO", message: `La categoría con identificador "${slug}" ya existe.` };
             }
+
+            // Si estaba en la lista de eliminadas, removerla de la lista de eliminadas
+            let deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
+            deletedList = deletedList.filter(s => s !== slug && s !== name.toLowerCase());
+            localStorage.setItem("demgel_deleted_categories", JSON.stringify(deletedList));
 
             const newCategory = {
                 id: slug,
@@ -147,6 +152,12 @@ const AdminCategoryService = (function() {
 
             list = list.filter(c => c.slug !== catToDelete.slug && c.id !== catToDelete.id);
             localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+
+            // Registrar slug e ID en la lista negra de categorías eliminadas
+            let deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
+            if (!deletedList.includes(catToDelete.slug)) deletedList.push(catToDelete.slug);
+            if (!deletedList.includes(catToDelete.id)) deletedList.push(catToDelete.id);
+            localStorage.setItem("demgel_deleted_categories", JSON.stringify(deletedList));
 
             try {
                 window.dispatchEvent(new Event("storage"));
