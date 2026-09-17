@@ -11,15 +11,22 @@ let DEMGEL_CATEGORIES_BASE = [
     { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt", is_active: true },
     { id: "auto", name: "Accesorios para Auto", slug: "auto", icon: "fa-car", is_active: true },
     { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high", is_active: true },
-    { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", is_active: true }
+    { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", is_active: true },
+    { id: "tvbox", name: "TV BOX", slug: "tvbox", icon: "fa-tv", is_active: true }
 ];
 
 function getActiveCategoriesList() {
     try {
         const raw = localStorage.getItem("demgel_mock_categories");
         if (raw) {
-            const list = JSON.parse(raw);
+            let list = JSON.parse(raw);
             if (Array.isArray(list) && list.length > 0) {
+                // Fusionar categorías base que puedan faltar en el almacenamiento del cliente
+                DEMGEL_CATEGORIES_BASE.forEach(defCat => {
+                    if (!list.some(c => c.slug === defCat.slug || c.id === defCat.id)) {
+                        list.push(defCat);
+                    }
+                });
                 return list.filter(c => c.is_active !== false);
             }
         }
