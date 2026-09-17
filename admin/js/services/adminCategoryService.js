@@ -10,15 +10,32 @@ const AdminCategoryService = (function() {
         { id: "todos", name: "Todos", slug: "todos", icon: "fa-border-all", description: "Todos los productos", is_active: true },
         { id: "cargadores", name: "Cargadores", slug: "cargadores", icon: "fa-plug", description: "Cargadores de pared y viaje TURBO AUTO-ID", is_active: true },
         { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt", description: "Cables de carga rápida Tipo-C, Lightning y USB", is_active: true },
-        { id: "auto", name: "Para Auto", slug: "auto", icon: "fa-car", description: "Cargadores de cigarrera y soportes para vehículos", is_active: true },
+        { id: "auto", name: "Accesorios para Auto", slug: "auto", icon: "fa-car", description: "Cargadores de cigarrera y soportes para vehículos", is_active: true },
         { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high", description: "Parlantes bluetooth portátiles con luces RGB", is_active: true },
         { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", description: "TV Box 8K, adaptadores y accesorios varios", is_active: true }
     ];
 
     function initCategories() {
         try {
-            if (!localStorage.getItem(STORAGE_KEY_CATEGORIES)) {
+            const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
+            if (!raw) {
                 localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
+            } else {
+                // Actualizar nombres existentes si usan la versión previa
+                let list = JSON.parse(raw);
+                let changed = false;
+                list = list.map(c => {
+                    if (c.id === "auto" || c.slug === "auto" || c.slug === "accesorios-auto" || c.slug === "accesorios-para-auto") {
+                        if (c.name !== "Accesorios para Auto") {
+                            changed = true;
+                            return { ...c, name: "Accesorios para Auto" };
+                        }
+                    }
+                    return c;
+                });
+                if (changed) {
+                    localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+                }
             }
         } catch (e) {
             console.warn("No se pudo inicializar categorías en localStorage:", e);
@@ -39,8 +56,16 @@ const AdminCategoryService = (function() {
     }
 
     function getCategoryBySlug(slug) {
+        if (!slug) return null;
         const list = getCategories();
-        return list.find(c => c.slug === slug || c.id === slug) || null;
+        const s = slug.toString().toLowerCase().trim();
+        return list.find(c => 
+            c.slug.toLowerCase() === s || 
+            c.id.toLowerCase() === s || 
+            c.name.toLowerCase() === s ||
+            (s.includes("auto") && (c.slug === "auto" || c.slug === "accesorios-para-auto" || c.slug === "accesorios-auto")) ||
+            (s.includes("vehiculo") && c.slug === "auto")
+        ) || null;
     }
 
     function createCategory(data) {
