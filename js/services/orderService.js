@@ -88,73 +88,82 @@ const DemgelOrderService = (function() {
             return { success: false, error: "METODO_INVALIDO", message: "Selecciona un método de pago válido." };
         }
 
-        // Si Supabase está disponible, delegar a create_order_with_reservation
+        // Si Supabase está disponible, delegar a create_order_with_reservation si todos los IDs son UUIDs válidos
         if (typeof DemgelSupabase !== "undefined") {
             try {
-                // Mapear items asegurando que tengan product_id válido
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                let allItemsValidUuid = true;
+
+                // Mapear items asegurando que tengan product_id válido o uuid de Supabase
                 const rpcItems = items.map(it => {
                     const prod = getProductById(it.productId || it.product_id);
+                    const candidateId = (prod && (prod.uuid || prod.id)) ? (prod.uuid || prod.id) : (it.productId || it.product_id);
+                    if (!uuidRegex.test(candidateId)) {
+                        allItemsValidUuid = false;
+                    }
                     return {
-                        productId: (prod && prod.id) ? prod.id : (it.productId || it.product_id),
+                        productId: candidateId,
                         quantity: it.quantity
                     };
                 });
 
-                const rpcRes = await DemgelSupabase.createOrderWithReservation({
-                    customer_name: nameClean,
-                    customer_phone: phoneClean,
-                    customer_email: customer_email ? customer_email.trim() : null,
-                    payment_method: payment_method,
-                    source_campaign: source_campaign || "direct",
-                    items: rpcItems,
-                    idempotency_key: idempotency_key || null
-                });
-
-                if (rpcRes && rpcRes.success) {
-                    const detailedItems = items.map(it => {
-                        const prod = getProductById(it.productId || it.product_id) || {};
-                        return {
-                            product_id: prod.id || it.productId,
-                            product_name: prod.name || "Producto Demgel",
-                            model_reference: prod.model_reference || "",
-                            image: prod.image || "assets/products/1.png",
-                            store_price: prod.store_price || 0,
-                            online_price: prod.online_price || 0,
-                            quantity: it.quantity,
-                            subtotal: (prod.online_price || 0) * it.quantity
-                        };
-                    });
-
-                    const newOrder = {
-                        id: rpcRes.order_id,
-                        order_number: rpcRes.order_number,
+                if (allItemsValidUuid) {
+                    const rpcRes = await DemgelSupabase.createOrderWithReservation({
                         customer_name: nameClean,
                         customer_phone: phoneClean,
                         customer_email: customer_email ? customer_email.trim() : null,
                         payment_method: payment_method,
-                        status: "PENDIENTE DE PAGO",
-                        total_store_price: rpcRes.total_store_price,
-                        total_online_price: rpcRes.total_online_price,
-                        total_savings: rpcRes.total_savings,
-                        items: detailedItems,
                         source_campaign: source_campaign || "direct",
-                        access_token: rpcRes.access_token,
-                        idempotency_key: idempotency_key || null,
-                        created_at: new Date().toISOString(),
-                        expires_at: rpcRes.expires_at,
-                        receipt: null,
-                        admin_notes: null
-                    };
+                        items: rpcItems,
+                        idempotency_key: idempotency_key || null
+                    });
 
-                    saveOrder(newOrder);
+                    if (rpcRes && rpcRes.success) {
+                        const detailedItems = items.map(it => {
+                            const prod = getProductById(it.productId || it.product_id) || {};
+                            return {
+                                product_id: prod.id || it.productId,
+                                product_name: prod.name || "Producto Demgel",
+                                model_reference: prod.model_reference || "",
+                                image: prod.image || "assets/products/D-E6048C.jpg",
+                                store_price: prod.store_price || 0,
+                                online_price: prod.online_price || 0,
+                                quantity: it.quantity,
+                                subtotal: (prod.online_price || 0) * it.quantity
+                            };
+                        });
 
-                    return {
-                        success: true,
-                        order: newOrder,
-                        is_duplicate_request: rpcRes.is_duplicate_request || false
-                    };
-                } else if (rpcRes && !rpcRes.success) {
-                    return rpcRes;
+                        const newOrder = {
+                            id: rpcRes.order_id,
+                            order_number: rpcRes.order_number,
+                            customer_name: nameClean,
+                            customer_phone: phoneClean,
+                            customer_email: customer_email ? customer_email.trim() : null,
+                            payment_method: payment_method,
+                            status: "PENDIENTE DE PAGO",
+                            total_store_price: rpcRes.total_store_price,
+                            total_online_price: rpcRes.total_online_price,
+                            total_savings: rpcRes.total_savings,
+                            items: detailedItems,
+                            source_campaign: source_campaign || "direct",
+                            access_token: rpcRes.access_token,
+                            idempotency_key: idempotency_key || null,
+                            created_at: new Date().toISOString(),
+                            expires_at: rpcRes.expires_at,
+                            receipt: null,
+                            admin_notes: null
+                        };
+
+                        saveOrder(newOrder);
+
+                        return {
+                            success: true,
+                            order: newOrder,
+                            is_duplicate_request: rpcRes.is_duplicate_request || false
+                        };
+                    } else if (rpcRes && !rpcRes.success && !rpcRes.error?.includes("uuid")) {
+                        return rpcRes;
+                    }
                 }
             } catch (e) {
                 console.warn("Fallo RPC Supabase, usando fallback local:", e);
