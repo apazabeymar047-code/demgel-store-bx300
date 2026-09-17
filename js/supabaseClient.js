@@ -49,18 +49,30 @@ const DemgelSupabase = (function() {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             return data.map(p => {
-                const modelRef = (p.model_reference || "").toUpperCase();
+                const pName = (p.name || "").toLowerCase();
+                let modelRef = (p.model_reference || "").toUpperCase();
+                let catSlug = (p.category && p.category.slug) ? p.category.slug : "otros";
+                let catName = (p.category && p.category.name) ? p.category.name : "Accesorios";
+
+                // Sanitización defensiva si el servidor Supabase devuelve modelo desalineado D-N0301 para Soporte Magnético
+                if (pName.includes("soporte") || pName.includes("auto 360")) {
+                    modelRef = "D-D0004C";
+                    catSlug = "auto";
+                    catName = "Accesorios para Auto";
+                }
+
                 let imgPath = p.main_image;
                 if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                     imgPath = `assets/products/${modelRef}.jpg`;
                 }
+
                 return {
                     id: p.id,
-                    model_reference: p.model_reference,
+                    model_reference: modelRef,
                     name: p.name,
                     slug: p.slug,
-                    category: (p.category && p.category.slug) ? p.category.slug : "otros",
-                    category_name: (p.category && p.category.name) ? p.category.name : "Accesorios",
+                    category: catSlug,
+                    category_name: catName,
                     category_id: p.category_id,
                     store_price: p.store_price,
                     online_price: p.online_price,
