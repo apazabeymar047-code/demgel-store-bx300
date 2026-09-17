@@ -74,6 +74,11 @@ const AdminProductService = (function() {
                     
                     if (pCat === targetCat || pCatName === targetCat) return true;
                     
+                    // TV BOX matching
+                    const isTvTarget = targetCat.includes("tv") || targetCat.includes("box");
+                    const isTvProduct = pCat.includes("tv") || pCatName.includes("tv") || (p.name || "").toLowerCase().includes("tv box") || (p.model_reference || "").toLowerCase().includes("n0301");
+                    if (isTvTarget && isTvProduct) return true;
+
                     // Sinonimia para auto / vehículo / accesorios-para-auto
                     const isAutoTarget = targetCat.includes("auto") || targetCat.includes("vehicul");
                     const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul");
