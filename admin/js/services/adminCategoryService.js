@@ -142,10 +142,41 @@ const AdminCategoryService = (function() {
         }
     }
 
+    function deleteCategory(slug) {
+        initCategories();
+        try {
+            let list = getCategories();
+            const catToDelete = getCategoryBySlug(slug);
+            if (!catToDelete) {
+                return { success: false, error: "NOT_FOUND", message: "La categoría especificada no existe." };
+            }
+            if (catToDelete.slug === "todos" || catToDelete.id === "todos") {
+                return { success: false, error: "CANNOT_DELETE_TODOS", message: "La categoría principal 'Todos' no se puede eliminar." };
+            }
+
+            list = list.filter(c => c.slug !== catToDelete.slug && c.id !== catToDelete.id);
+            localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(list));
+
+            try {
+                window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { deletedSlug: slug } }));
+            } catch (evErr) {}
+
+            return {
+                success: true,
+                category: catToDelete,
+                message: `Categoría "${catToDelete.name}" eliminada correctamente.`
+            };
+        } catch (e) {
+            console.error("Error al eliminar categoría:", e);
+            return { success: false, error: "DELETE_ERROR", message: "Error interno al eliminar la categoría." };
+        }
+    }
+
     return {
         getCategories,
         getCategoryBySlug,
         createCategory,
-        updateCategory
+        updateCategory,
+        deleteCategory
     };
 })();
