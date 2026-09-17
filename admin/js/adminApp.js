@@ -954,6 +954,11 @@ function renderCategoriesView() {
                     <button class="btn-action" onclick="openCategoryModal('${c.slug}')">
                         <i class="fas fa-edit"></i> Editar
                     </button>
+                    ${c.slug !== "todos" && c.id !== "todos" ? `
+                        <button class="btn-action btn-action--danger" onclick="openDeleteCategoryModalStep1('${c.slug}')">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1029,6 +1034,99 @@ ${titleMsg}
     }
 
     document.getElementById("modal-create-category").classList.remove("active");
+    renderCategoriesView();
+    updateProductCategorySelects();
+}
+
+// ── LÓGICA DE ELIMINACIÓN DE CATEGORÍA CON DOBLE CONFIRMACIÓN ──
+let currentDeleteCategoryStep = 1;
+
+function openDeleteCategoryModalStep1(slug) {
+    const cat = AdminCategoryService.getCategoryBySlug(slug);
+    if (!cat) return;
+
+    if (cat.slug === "todos" || cat.id === "todos") {
+        alert("La categoría principal 'Todos' no se puede eliminar.");
+        return;
+    }
+
+    currentDeleteCategoryStep = 1;
+    document.getElementById("delete-category-target-slug").value = cat.slug;
+
+    renderDeleteCategoryModalStepUI(cat);
+    document.getElementById("modal-delete-category").classList.add("active");
+}
+
+function renderDeleteCategoryModalStepUI(cat) {
+    const titleEl = document.getElementById("delete-category-modal-title");
+    const bodyEl = document.getElementById("delete-category-modal-body");
+    const btnEl = document.getElementById("btn-confirm-delete-category");
+
+    if (currentDeleteCategoryStep === 1) {
+        if (titleEl) titleEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Confirmación 1 de 2: Eliminar Categoría`;
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+                    <strong style="color: #FFF; font-size: 1rem; display: block; margin-bottom: 4px;">Paso 1/2: Confirmación inicial</strong>
+                    ¿Estás seguro de que deseas eliminar la categoría <strong>"${cat.name}"</strong> (<code>/${cat.slug}</code>)?
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                    Al continuar, el sistema solicitará una <strong>segunda confirmación obligatoria</strong> para prevenir eliminaciones accidentales.
+                </p>
+            `;
+        }
+        if (btnEl) {
+            btnEl.className = "btn-action btn-action--danger";
+            btnEl.innerHTML = `Continuar al Paso 2 &rarr;`;
+            btnEl.onclick = () => {
+                currentDeleteCategoryStep = 2;
+                renderDeleteCategoryModalStepUI(cat);
+            };
+        }
+    } else if (currentDeleteCategoryStep === 2) {
+        if (titleEl) titleEl.innerHTML = `<i class="fas fa-skull-crossbones"></i> Confirmación 2 de 2 FINAL: Confirmar Borrado Definitivo`;
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.22); border: 1px solid rgba(239, 68, 68, 0.6); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+                    <strong style="color: #FF6B6B; font-size: 1.05rem; display: block; margin-bottom: 6px;">🚨 ¡ÚLTIMO AVISO DE CONFIRMACIÓN!</strong>
+                    La categoría <strong>"${cat.name}"</strong> será eliminada PERMANENTEMENTE de la tienda web y del Admin Panel.
+                </div>
+                <p style="font-size: 0.85rem; color: #FFF; font-weight: 700; line-height: 1.5;">
+                    Haz clic en el botón a continuación para ejecutar el borrado definitivo.
+                </p>
+            `;
+        }
+        if (btnEl) {
+            btnEl.className = "btn-action btn-action--danger";
+            btnEl.innerHTML = `<i class="fas fa-trash-alt"></i> 🗑️ Sí, Eliminar Definitivamente`;
+            btnEl.onclick = () => executeCategoryDeletion(cat);
+        }
+    }
+}
+
+function executeCategoryDeletion(cat) {
+    const res = AdminCategoryService.deleteCategory(cat.slug);
+    if (!res.success) {
+        alert("Error al eliminar: " + res.message);
+        return;
+    }
+
+    showToast(res.message);
+
+    // Notificar a Telegram Bot
+    if (typeof DemgelTelegramService !== "undefined" && DemgelTelegramService.sendTextMessage) {
+        const textHtml = `
+🗑️ <b>CATEGORÍA ELIMINADA EN DEMGEL STORE</b>
+
+🏷️ <b>Nombre:</b> ${cat.name}
+📌 <b>Slug:</b> <code>${cat.slug}</code>
+
+✨ <i>La categoría ha sido borrada del Admin Panel y de la tienda web en tiempo real.</i>
+        `.trim();
+        DemgelTelegramService.sendTextMessage(textHtml);
+    }
+
+    document.getElementById("modal-delete-category").classList.remove("active");
     renderCategoriesView();
     updateProductCategorySelects();
 }
