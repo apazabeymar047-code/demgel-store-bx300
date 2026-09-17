@@ -6,12 +6,12 @@
  */
 
 let DEMGEL_CATEGORIES_BASE = [
-    { id: "todos", name: "Todos", slug: "todos", icon: "fa-border-all" },
-    { id: "cargadores", name: "Cargadores", slug: "cargadores", icon: "fa-plug" },
-    { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt" },
-    { id: "auto", name: "Para Auto", slug: "auto", icon: "fa-car" },
-    { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high" },
-    { id: "otros", name: "Otros", slug: "otros", icon: "fa-box-open" }
+    { id: "todos", name: "Todos", slug: "todos", icon: "fa-border-all", is_active: true },
+    { id: "cargadores", name: "Cargadores", slug: "cargadores", icon: "fa-plug", is_active: true },
+    { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt", is_active: true },
+    { id: "auto", name: "Accesorios para Auto", slug: "auto", icon: "fa-car", is_active: true },
+    { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high", is_active: true },
+    { id: "otros", name: "Otros Accesorios", slug: "otros", icon: "fa-box-open", is_active: true }
 ];
 
 function getActiveCategoriesList() {
