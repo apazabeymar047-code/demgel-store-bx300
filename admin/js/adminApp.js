@@ -61,6 +61,9 @@ function navigateToView(hash) {
         case "productos":
             renderProductsView();
             break;
+        case "categorias":
+            renderCategoriesView();
+            break;
         case "configuracion":
             renderConfigView();
             break;
@@ -896,8 +899,155 @@ function setupModals() {
     if (createStorePriceInput) createStorePriceInput.addEventListener("input", updateCreateProductSavingsPreview);
     if (createOnlinePriceInput) createOnlinePriceInput.addEventListener("input", updateCreateProductSavingsPreview);
 
+    // Botón de Abrir Modal de Categoría
+    const btnOpenCategory = document.getElementById("btn-open-create-category");
+    if (btnOpenCategory) {
+        btnOpenCategory.addEventListener("click", () => openCategoryModal());
+    }
+
+    const categoryForm = document.getElementById("create-category-form");
+    if (categoryForm) categoryForm.addEventListener("submit", submitCategoryForm);
+
     const btnConfirmCancel = document.getElementById("btn-confirm-cancel-order");
     if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", submitCancelOrder);
+}
+
+// ── 11. Renderizado y Gestión de Categorías ──
+function renderCategoriesView() {
+    const categories = AdminCategoryService.getCategories();
+    const products = AdminProductService.getProducts();
+    const grid = document.getElementById("categories-grid");
+    if (!grid) return;
+
+    if (categories.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:3rem; color:var(--text-muted);">No hay categorías creadas todavía.</div>`;
+        return;
+    }
+
+    let html = "";
+    categories.forEach(c => {
+        if (c.slug === "todos") return; // Saltar 'todos' en gestión
+
+        const prodCount = products.filter(p => p.category === c.slug || p.category === c.name).length;
+        const iconClass = c.icon || "fa-tag";
+
+        html += `
+            <div class="kpi-card" style="display:flex; flex-direction:column; justify-content:space-between; padding:1.5rem; border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);">
+                <div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                        <div style="width:48px; height:48px; border-radius:12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); display:flex; align-items:center; justify-content:center; color: var(--primary-light); font-size:1.4rem;">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <span class="status-badge-admin badge-completed" style="font-size:0.75rem;">${prodCount} productos</span>
+                    </div>
+
+                    <h3 style="font-size:1.15rem; font-weight:800; color:#FFF; margin-bottom:4px;">${c.name}</h3>
+                    <div style="font-size:0.78rem; color:var(--text-muted); font-family:monospace; margin-bottom:0.8rem;">Slug: /${c.slug}</div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4; margin-bottom:1.2rem;">${c.description || 'Sin descripción asignada.'}</p>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid rgba(255,255,255,0.05); padding-top:0.8rem;">
+                    <button class="btn-action" onclick="openCategoryModal('${c.slug}')">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = html;
+    updateProductCategorySelects();
+}
+
+function openCategoryModal(slug = null) {
+    const form = document.getElementById("create-category-form");
+    if (form) form.reset();
+
+    const title = document.getElementById("modal-category-title");
+
+    if (slug) {
+        const cat = AdminCategoryService.getCategoryBySlug(slug);
+        if (!cat) return;
+
+        document.getElementById("category-original-slug").value = cat.slug;
+        document.getElementById("category-name-input").value = cat.name;
+        document.getElementById("category-slug-input").value = cat.slug;
+        document.getElementById("category-icon-input").value = cat.icon || "fa-tag";
+        document.getElementById("category-desc-input").value = cat.description || "";
+
+        if (title) title.innerHTML = `<i class="fas fa-edit" style="color:var(--primary-light);"></i> Editar Categoría "${cat.name}"`;
+    } else {
+        document.getElementById("category-original-slug").value = "";
+        if (title) title.innerHTML = `<i class="fas fa-folder-plus" style="color:var(--primary-light);"></i> Publicar Nueva Categoría`;
+    }
+
+    document.getElementById("modal-create-category").classList.add("active");
+}
+
+function submitCategoryForm(e) {
+    e.preventDefault();
+    const originalSlug = document.getElementById("category-original-slug").value;
+    const data = {
+        name: document.getElementById("category-name-input").value,
+        slug: document.getElementById("category-slug-input").value,
+        icon: document.getElementById("category-icon-input").value,
+        description: document.getElementById("category-desc-input").value
+    };
+
+    let res;
+    if (originalSlug) {
+        res = AdminCategoryService.updateCategory(originalSlug, data);
+    } else {
+        res = AdminCategoryService.createCategory(data);
+    }
+
+    if (!res.success) {
+        alert("Error: " + res.message);
+        return;
+    }
+
+    showToast(res.message);
+
+    // Notificar a Telegram
+    if (typeof DemgelTelegramService !== "undefined" && DemgelTelegramService.sendTextMessage) {
+        const titleMsg = originalSlug ? "✏️ <b>CATEGORÍA ACTUALIZADA EN DEMGEL STORE</b>" : "🏷️ <b>¡NUEVA CATEGORÍA CREADA EN DEMGEL STORE!</b>";
+        const textHtml = `
+${titleMsg}
+
+🏷️ <b>Nombre:</b> ${res.category.name}
+📌 <b>Slug:</b> <code>${res.category.slug}</code>
+🎨 <b>Icono:</b> ${res.category.icon}
+📝 <b>Descripción:</b> ${res.category.description || 'Sin descripción'}
+
+✨ <i>La tienda pública y el Admin Panel fueron actualizados en tiempo real.</i>
+        `.trim();
+        DemgelTelegramService.sendTextMessage(textHtml);
+    }
+
+    document.getElementById("modal-create-category").classList.remove("active");
+    renderCategoriesView();
+    updateProductCategorySelects();
+}
+
+// Actualizar selectores dinámicos de categoría en los modales de productos
+function updateProductCategorySelects() {
+    const categories = AdminCategoryService.getCategories();
+    const createSelect = document.getElementById("create-product-category");
+    const editSelect = document.getElementById("edit-product-category");
+    const filterSelect = document.getElementById("product-category-filter");
+
+    let optionsHtml = "";
+    categories.forEach(c => {
+        if (c.slug === "todos") return;
+        optionsHtml += `<option value="${c.slug}">${c.name}</option>`;
+    });
+
+    if (createSelect) createSelect.innerHTML = optionsHtml;
+    if (editSelect) editSelect.innerHTML = optionsHtml;
+
+    if (filterSelect) {
+        filterSelect.innerHTML = `<option value="all">Todas las Categorías</option>` + optionsHtml;
+    }
 }
 
 function renderStatusBadgeHtml(status) {
