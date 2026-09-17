@@ -15,6 +15,7 @@ function initAdminApp() {
     setupOrderFilters();
     setupProductFilters();
     setupConfigForm();
+    updateProductCategorySelects();
 
     // Cargar vista inicial según hash o por defecto #dashboard
     const currentHash = window.location.hash || "#dashboard";
@@ -503,6 +504,9 @@ function renderProductsView() {
             stockBadge = `<span class="status-badge-admin badge-pending">Bajo (${p.stock})</span>`;
         }
 
+        const catObj = typeof AdminCategoryService !== "undefined" ? AdminCategoryService.getCategoryBySlug(p.category) : null;
+        const catBadge = catObj ? `<span style="font-size:0.85rem; color:var(--primary-light);"><i class="fas ${catObj.icon}"></i> ${catObj.name}</span>` : `<span style="font-size:0.85rem; color:var(--text-muted);">${p.category_name || p.category}</span>`;
+
         html += `
             <tr>
                 <td><img src="${p.image}" alt="${p.name}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;"></td>
@@ -510,7 +514,7 @@ function renderProductsView() {
                     <strong>${p.name}</strong>
                     <div style="font-size:0.78rem; color:var(--text-muted);">${p.model_reference || 'Ref oficial'}</div>
                 </td>
-                <td><span style="font-size:0.85rem; color:var(--text-muted);">${p.category}</span></td>
+                <td>${catBadge}</td>
                 <td>${formatCLP(p.store_price)}</td>
                 <td><strong style="color:var(--primary-light);">${formatCLP(p.online_price)}</strong></td>
                 <td><span style="color:var(--accent-cyan); font-weight:800;">${p.discount_pct}%</span></td>
