@@ -1,0 +1,7 @@
+# Temporary files & IDE
+.gemini/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
