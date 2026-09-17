@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de tu Pedido | Demgel Store</title>
+    <meta name="description" content="Estado de tu pedido Demgel, reserva de 30 minutos y carga de comprobante para retiro en tienda.">
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-order-tracking">
+
+    <!-- ── Header ── -->
+    <header id="main-header" class="scrolled">
+        <nav class="container">
+            <a href="index.html" class="logo">
+                <span class="brand">Demgel<span>.</span></span>
+                <span class="tagline">Seguimiento de Pedido</span>
+            </a>
+
+            <div class="nav-actions">
+                <a href="index.html" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="order-tracking-section">
+        <div class="container order-tracking-container">
+
+            <!-- Estado de Error / Acceso Denegado -->
+            <div id="order-error-box" class="checkout-box" style="display: none; text-align: center; margin-bottom: 2rem;">
+                <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--accent-red); margin-bottom: 1rem;"></i>
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Acceso no válido al pedido</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">No se encontró el pedido o no dispones del token de acceso autorizado. Por seguridad, los pedidos no son públicos.</p>
+                <a href="index.html" class="btn-primary">Volver a la Tienda</a>
+            </div>
+
+            <!-- Contenido del Pedido -->
+            <div id="order-main-content" style="display: none;">
+
+                <!-- 1. Tarjeta de Cabecera y Código -->
+                <div class="order-header-card">
+                    <div class="order-code-block">
+                        <div class="order-label">Código de Retiro en Tienda</div>
+                        <div class="order-number" id="ui-order-number">DG-2026-0000</div>
+                    </div>
+                    <div id="ui-status-badge-container">
+                        <!-- Inyectado por JS según estado -->
+                    </div>
+                </div>
+
+                <!-- 2. Tarjeta de Temporizador de 30 MINUTOS -->
+                <div id="ui-timer-card" class="timer-card active">
+                    <div class="timer-title" id="ui-timer-title">
+                        <i class="fas fa-stopwatch"></i> Tiempo restante para asegurar tu reserva:
+                    </div>
+                    <div class="timer-countdown active" id="ui-timer-countdown">29:59</div>
+                    <div class="timer-note" id="ui-timer-note">
+                        Realiza tu pago y adjunta tu comprobante antes de que expire el tiempo para conservar tus productos reservados.
+                    </div>
+                </div>
+
+                <!-- 3. Instrucciones de Pago (Bancarias / CajaVecina) -->
+                <div class="checkout-box" style="margin-bottom: 2rem;">
+                    <div class="checkout-box__header">
+                        <h3 class="checkout-box__title">
+                            <i class="fas fa-money-bill-wave"></i> Instrucciones de Pago
+                        </h3>
+                    </div>
+                    <div id="ui-payment-instructions" style="font-size: 0.95rem; line-height: 1.7; color: var(--text-muted);">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </div>
+
+                <!-- 4. Sección de Carga de Comprobante -->
+                <div id="ui-upload-wrapper">
+                    <div class="receipt-upload-box" id="ui-receipt-upload-box">
+                        <div class="upload-icon-wrap">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h3 class="upload-title">Sube tu Comprobante de Pago</h3>
+                        <p class="upload-sub">
+                            Formatos permitidos: <strong>JPG, PNG, WEBP o PDF</strong> (Máximo 10 MB).
+                        </p>
+
+                        <!-- Input Oculto con Soporte de Cámara en Móvil -->
+                        <input type="file" id="receipt-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" capture="environment" style="display: none;">
+
+                        <div class="upload-actions-mobile">
+                            <button type="button" class="btn-file-select" id="btn-trigger-camera">
+                                <i class="fas fa-camera"></i> Tomar Foto / Elegir Archivo
+                            </button>
+                        </div>
+
+                        <!-- Zona de Previsualización -->
+                        <div id="receipt-preview-zone" class="receipt-preview-container" style="display: none;">
+                            <div id="receipt-preview-display">
+                                <!-- Imagen o PDF Card -->
+                            </div>
+                            <div class="receipt-confirm-actions">
+                                <button type="button" class="btn-secondary" id="btn-change-file">
+                                    <i class="fas fa-redo"></i> Cambiar Archivo
+                                </button>
+                                <button type="button" class="btn-primary btn-submit-receipt" id="btn-submit-receipt">
+                                    <i class="fas fa-upload"></i> Enviar Comprobante
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mensaje de Error de Validación -->
+                        <div id="receipt-error-msg" style="display: none; color: var(--accent-red); margin-top: 1rem; font-size: 0.9rem; font-weight: 700;"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Banner Informativo de Pago en Revisión (Visible cuando ya se subió) -->
+                <div id="ui-receipt-success-banner" class="receipt-success-banner" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h4>Comprobante Recibido Exitosamente</h4>
+                        <p>Tu comprobante ya está siendo revisado por nuestro equipo de tienda. Tu reserva de stock quedó <strong>protegida</strong>. Te avisaremos cuando puedas pasar a retirar.</p>
+                    </div>
+                </div>
+
+                <!-- 6. Resumen de Productos y Totales -->
+                <div class="checkout-box">
+                    <div class="checkout-box__header">
+                        <h3 class="checkout-box__title">
+                            <i class="fas fa-box-open"></i> Artículos en este Pedido
+                        </h3>
+                    </div>
+
+                    <div class="pickup-banner-fixed" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-store"></i>
+                        <div>
+                            <strong>Retiro en Tienda Oficial Demgel</strong>
+                            <span id="ui-customer-meta">Cliente: ... | Tel: ...</span>
+                        </div>
+                    </div>
+
+                    <div id="ui-order-items-list" class="checkout-items-list">
+                        <!-- Inyectado por JS -->
+                    </div>
+
+                    <div class="cart-summary-line">
+                        <span>Precio mostrador tienda:</span>
+                        <span id="ui-store-total">$0</span>
+                    </div>
+                    <div class="cart-summary-line cart-summary-line--savings">
+                        <span><i class="fas fa-tag"></i> Ahorro total online:</span>
+                        <span id="ui-savings-total">$0</span>
+                    </div>
+                    <div class="cart-summary-total">
+                        <span>TOTAL A PAGAR:</span>
+                        <span id="ui-online-total">$0</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ====== FOOTER ====== -->
+    <footer>
+        <div class="container" style="text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">
+                &copy; 2026 Demgel Store • Reserva oficial de 30 minutos.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/services/configService.js"></script>
+    <script src="js/services/telegramService.js"></script>
+    <script src="js/services/orderService.js"></script>
+    <script src="js/services/receiptService.js"></script>
+    <script>
+        let currentOrder = null;
+        let timerInterval = null;
+        let currentSelectedReceipt = null;
+        let currentRawFile = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get("id");
+            const token = urlParams.get("token");
+
+            const errorBox = document.getElementById("order-error-box");
+            const mainContent = document.getElementById("order-main-content");
+
+            if (!orderId || !token) {
+                errorBox.style.display = "block";
+                return;
+            }
+
+            // Cargar configuración de tienda remota si existe
+            if (DemgelConfigService.loadConfig) {
+                await DemgelConfigService.loadConfig();
+            }
+
+            // Obtener orden segura usando el token (Supabase RPC con fallback local)
+            currentOrder = await DemgelOrderService.getOrderByToken(orderId, token);
+
+            if (!currentOrder) {
+                errorBox.style.display = "block";
+                return;
+            }
+
+            mainContent.style.display = "block";
+            renderOrderData(currentOrder);
+            startCountdownTimer();
+            setupReceiptUpload();
+        });
+
+
+        function renderOrderData(order) {
+            document.getElementById("ui-order-number").textContent = order.order_number;
+
+            // Renderizar badge de estado
+            renderStatusBadge(order.status);
+
+            // Metadatos del cliente
+            const metaEl = document.getElementById("ui-customer-meta");
+            metaEl.textContent = (order.customer_phone && order.customer_phone !== "Sin Teléfono") 
+                ? `Cliente: ${order.customer_name} | WhatsApp: ${order.customer_phone}` 
+                : `Cliente: ${order.customer_name}`;
+
+            // Instrucciones de pago
+            const payBox = document.getElementById("ui-payment-instructions");
+            if (order.payment_method === "transferencia") {
+                const bank = DemgelConfigService.getBankDetails();
+                payBox.innerHTML = `
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1.2rem;">
+                        <p style="color: white; font-weight: 700; margin-bottom: 0.8rem;">
+                            <i class="fas fa-university" style="color: var(--primary);"></i> Datos para Transferencia Bancaria:
+                        </p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem;">
+                            <li>• <strong>Banco:</strong> <span>${bank.bank_name}</span></li>
+                            <li>• <strong>Tipo de Cuenta:</strong> <span>${bank.account_type}</span></li>
+                            <li>• <strong>Número de Cuenta:</strong> <span>${bank.account_number}</span></li>
+                            <li>• <strong>RUT:</strong> <span>${bank.rut}</span></li>
+                            <li>• <strong>Titular:</strong> <span>${bank.holder_name}</span></li>
+                            <li>• <strong>Correo de Confirmación:</strong> <span>${bank.email}</span></li>
+                        </ul>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--primary-light);">
+                            <strong>Monto Exacto a Transferir:</strong> <span style="font-size: 1.2rem; font-weight: 800;">${formatCLP(order.total_online_price)}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const caja = DemgelConfigService.getCajaVecinaInstructions();
+                payBox.innerHTML = `
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1.2rem;">
+                        <p style="color: white; font-weight: 700; margin-bottom: 0.8rem;">
+                            <i class="fas fa-store-alt" style="color: var(--primary);"></i> Pago en Efectivo por CajaVecina:
+                        </p>
+                        <p style="margin-bottom: 0.8rem;">${caja.instructions}</p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem;">
+                            ${caja.step_by_step.map(s => `<li>${s}</li>`).join("")}
+                        </ul>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--primary-light);">
+                            <strong>Monto en Efectivo:</strong> <span style="font-size: 1.2rem; font-weight: 800;">${formatCLP(order.total_online_price)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Renderizar lista de ítems
+            const itemsList = document.getElementById("ui-order-items-list");
+            let itemsHtml = "";
+            order.items.forEach(it => {
+                itemsHtml += `
+                    <div class="checkout-item-row">
+                        <img src="${it.image}" alt="${it.product_name}">
+                        <div class="checkout-item-details">
+                            <div class="checkout-item-title">${it.product_name}</div>
+                            <div class="checkout-item-qty">Cantidad: ${it.quantity} ${it.model_reference ? '• Ref: ' + it.model_reference : ''}</div>
+                        </div>
+                        <div class="checkout-item-price">${formatCLP(it.subtotal)}</div>
+                    </div>
+                `;
+            });
+            itemsList.innerHTML = itemsHtml;
+
+            // Totales económicos
+            document.getElementById("ui-store-total").textContent = formatCLP(order.total_store_price);
+            document.getElementById("ui-savings-total").textContent = formatCLP(order.total_savings);
+            document.getElementById("ui-online-total").textContent = formatCLP(order.total_online_price);
+
+            // Ajustar visualización según estado previo
+            updateUIByStatus(order.status);
+        }
+
+        function renderStatusBadge(status) {
+            const container = document.getElementById("ui-status-badge-container");
+            let badgeClass = "status-badge--pending";
+            let icon = "fa-clock";
+            let label = "Esperando Comprobante";
+
+            switch (status) {
+                case "PENDIENTE DE PAGO":
+                    badgeClass = "status-badge--pending";
+                    icon = "fa-clock";
+                    label = "🕐 Esperando Comprobante";
+                    break;
+                case "PAGO EN REVISIÓN":
+                    badgeClass = "status-badge--review";
+                    icon = "fa-search";
+                    label = "🔎 Estamos verificando tu pago";
+                    break;
+                case "PAGO CONFIRMADO":
+                    badgeClass = "status-badge--confirmed";
+                    icon = "fa-check";
+                    label = "✓ Pago confirmado";
+                    break;
+                case "LISTO PARA RETIRAR":
+                    badgeClass = "status-badge--ready";
+                    icon = "fa-store";
+                    label = "🏪 Tu pedido está listo para retirar";
+                    break;
+                case "RETIRADO":
+                    badgeClass = "status-badge--completed";
+                    icon = "fa-check-double";
+                    label = "✓ Pedido retirado";
+                    break;
+                case "CANCELADO":
+                    badgeClass = "status-badge--cancelled";
+                    icon = "fa-times";
+                    label = "✕ Pedido cancelado";
+                    break;
+            }
+
+            container.innerHTML = `<span class="status-badge ${badgeClass}"><i class="fas ${icon}"></i> ${label}</span>`;
+        }
+
+        function updateUIByStatus(status) {
+            const uploadWrapper = document.getElementById("ui-upload-wrapper");
+            const successBanner = document.getElementById("ui-receipt-success-banner");
+            const timerCard = document.getElementById("ui-timer-card");
+            const countdownEl = document.getElementById("ui-timer-countdown");
+            const noteEl = document.getElementById("ui-timer-note");
+
+            if (status === "PAGO EN REVISIÓN") {
+                uploadWrapper.style.display = "none";
+                successBanner.style.display = "flex";
+                timerCard.className = "timer-card frozen";
+                countdownEl.className = "timer-countdown frozen";
+                countdownEl.innerHTML = '<i class="fas fa-shield-alt"></i> RESERVA PROTEGIDA';
+                countdownEl.style.fontSize = "2.2rem";
+                noteEl.textContent = "Tu comprobante está en revisión. El tiempo límite ya no expira y tus productos permanecen reservados.";
+            } else if (status === "CANCELADO") {
+                uploadWrapper.style.display = "block"; // Deja ver la zona pero rechaza
+                successBanner.style.display = "none";
+                timerCard.className = "timer-card expired";
+                countdownEl.className = "timer-countdown expired";
+                countdownEl.textContent = "RESERVA EXPIRADA";
+                noteEl.textContent = "Tu tiempo de reserva de 30 minutos ha finalizado y el stock fue liberado al catálogo.";
+            }
+        }
+
+        // 30 MINUTOS COUNTDOWN TIMER (Simulación Local Mock)
+        // NOTA DE ARQUITECTURA: En esta fase local, el contador es una simulación basada en order.expires_at.
+        // En la futura integración remota, la autoridad única del tiempo será Supabase (PostgreSQL / Edge Functions).
+        function startCountdownTimer() {
+            if (!currentOrder || currentOrder.status !== "PENDIENTE DE PAGO") return;
+
+            const countdownEl = document.getElementById("ui-timer-countdown");
+            const timerCard = document.getElementById("ui-timer-card");
+
+            if (timerInterval) clearInterval(timerInterval);
+
+            async function updateTimer() {
+                const now = new Date().getTime();
+                const expires = new Date(currentOrder.expires_at).getTime();
+                const distance = expires - now;
+
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    countdownEl.textContent = "00:00";
+                    // Disparar chequeo de expiración en el servicio
+                    DemgelOrderService.checkOrderExpiration(currentOrder.id);
+                    const freshOrder = await DemgelOrderService.getOrderByToken(currentOrder.id, currentOrder.access_token);
+                    if (freshOrder) currentOrder = freshOrder;
+                    renderStatusBadge(currentOrder.status || "CANCELADO");
+                    updateUIByStatus("CANCELADO");
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Configuración de Subida de Comprobante
+        function setupReceiptUpload() {
+            const fileInput = document.getElementById("receipt-file-input");
+            const triggerBtn = document.getElementById("btn-trigger-camera");
+            const previewZone = document.getElementById("receipt-preview-zone");
+            const previewDisplay = document.getElementById("receipt-preview-display");
+            const errorMsg = document.getElementById("receipt-error-msg");
+            const changeBtn = document.getElementById("btn-change-file");
+            const submitBtn = document.getElementById("btn-submit-receipt");
+
+            triggerBtn.addEventListener("click", () => {
+                errorMsg.style.display = "none";
+                fileInput.click();
+            });
+
+            changeBtn.addEventListener("click", () => {
+                fileInput.value = "";
+                previewZone.style.display = "none";
+                triggerBtn.parentElement.style.display = "flex";
+                currentSelectedReceipt = null;
+                currentRawFile = null;
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                currentRawFile = file;
+                errorMsg.style.display = "none";
+
+                DemgelReceiptService.generatePreview(file, (err, previewData) => {
+                    if (err) {
+                        errorMsg.textContent = err.message;
+                        errorMsg.style.display = "block";
+                        return;
+                    }
+
+                    currentSelectedReceipt = previewData;
+                    currentSelectedReceipt.rawFile = file;
+
+                    if (previewData.isPdf) {
+                        previewDisplay.innerHTML = `
+                            <div class="receipt-pdf-preview">
+                                <i class="fas fa-file-pdf"></i>
+                                <div>
+                                    <strong style="display:block; font-size:1rem;">${previewData.fileName}</strong>
+                                    <span style="font-size:0.8rem; color:var(--text-muted);">${previewData.fileSize}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        previewDisplay.innerHTML = `
+                            <img src="${previewData.previewUrl}" alt="Comprobante" class="receipt-img-preview">
+                            <span style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${previewData.fileName} (${previewData.fileSize})</span>
+                        `;
+                    }
+
+                    previewZone.style.display = "flex";
+                    triggerBtn.parentElement.style.display = "none";
+                });
+            });
+
+            submitBtn.addEventListener("click", async () => {
+                if (!currentSelectedReceipt) return;
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo y Validando Comprobante...';
+
+                // Procesar con el servicio de comprobantes (Storage privado + RPC)
+                const result = await DemgelReceiptService.processAndSubmitReceipt(
+                    currentOrder.id,
+                    currentOrder.access_token,
+                    currentSelectedReceipt,
+                    currentRawFile
+                );
+
+                if (result && result.success) {
+                    if (typeof DemgelTelegramService !== "undefined") {
+                        DemgelTelegramService.notifyReceiptUploaded(currentOrder, currentSelectedReceipt, currentRawFile).catch(err => {
+                            console.warn("Error enviando comprobante a Telegram:", err);
+                        });
+                    }
+                }
+
+                if (!result.success) {
+                    errorMsg.textContent = result.message || "Error al procesar el comprobante.";
+                    errorMsg.style.display = "block";
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Enviar Comprobante';
+
+                    // Si fue por expiración, actualizar toda la pantalla a CANCELADO
+                    if (result.error === "RESERVA_EXPIRADA") {
+                        if (timerInterval) clearInterval(timerInterval);
+                        const refreshed = await DemgelOrderService.getOrderByToken(currentOrder.id, currentOrder.access_token);
+                        if (refreshed) currentOrder = refreshed;
+                        renderStatusBadge("CANCELADO");
+                        updateUIByStatus("CANCELADO");
+                    }
+                    return;
+                }
+
+                // Éxito: Congelar temporizador y actualizar vista a PAGO EN REVISIÓN
+                if (timerInterval) clearInterval(timerInterval);
+                currentOrder = result.order || await DemgelOrderService.getOrderByToken(currentOrder.id, currentOrder.access_token);
+                renderStatusBadge("PAGO EN REVISIÓN");
+                updateUIByStatus("PAGO EN REVISIÓN");
+            });
+        }
+    </script>
+</body>
+</html>
+
