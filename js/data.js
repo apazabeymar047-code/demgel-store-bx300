@@ -218,19 +218,60 @@ function getActiveProductsList() {
         if (raw) {
             let stored = JSON.parse(raw);
             if (Array.isArray(stored) && stored.length > 0) {
-                // Sincronizar imágenes locales HD y categoría de TV BOX en almacenamiento existente
-                return stored.map(p => {
+                let modified = false;
+                const originalLen = stored.length;
+
+                // Purgar productos fantasma de Soporte Magnético duplicados como TV BOX
+                let filtered = stored.filter(p => {
+                    const pName = (p.name || "").toLowerCase();
+                    if (pName.includes("soporte") && (p.category === "tvbox" || p.model_reference === "D-N0301")) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (filtered.length !== originalLen) modified = true;
+
+                // Sincronizar imágenes locales HD y limpiar asignaciones erróneas de categoría
+                let cleaned = filtered.map(p => {
+                    const pName = (p.name || "").toLowerCase();
                     const modelRef = (p.model_reference || "").toUpperCase();
+
+                    // Sanitizar productos de Soporte Magnético / Accesorios para Auto
+                    if (pName.includes("soporte") || (pName.includes("auto") && !pName.includes("cargador"))) {
+                        if (p.category !== "auto" || p.category_name !== "Accesorios para Auto" || p.model_reference === "D-N0301" || (p.image && p.image.includes("D-N0301"))) {
+                            modified = true;
+                        }
+                        return {
+                            ...p,
+                            category: "auto",
+                            category_name: "Accesorios para Auto",
+                            model_reference: "D-D0004C",
+                            image: "assets/products/D-D0004C.jpg"
+                        };
+                    }
+
                     let imgPath = p.image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
                     }
-                    // Auto-migrar categoría D-N0301 / TV BOX si estaba marcada como 'otros'
-                    if (modelRef === "D-N0301" || (p.name || "").toLowerCase().includes("tv box")) {
-                        return { ...p, image: imgPath, category: "tvbox", category_name: "TV BOX" };
+
+                    // Auto-migrar categoría a TV BOX solo si el NOMBRE del producto incluye TV Box o es el ID oficial de TV Box
+                    if ((pName.includes("tv box") || pName.includes("tvbox") || p.id === "prod-d-n0301") && !pName.includes("soporte")) {
+                        return { ...p, image: "assets/products/D-N0301.jpg", category: "tvbox", category_name: "TV BOX" };
                     }
+
                     return { ...p, image: imgPath };
                 });
+
+                // Si se realizaron correcciones en productos corruptos en el navegador del usuario, sobreescribir localStorage inmediatamente
+                if (modified) {
+                    try {
+                        localStorage.setItem("demgel_mock_products", JSON.stringify(cleaned));
+                    } catch (err) {}
+                }
+
+                return cleaned;
             }
         }
     } catch (e) {
@@ -252,18 +293,17 @@ function getProductsByCategory(categorySlug) {
         const pCatId = (p.category_id || "").toString().toLowerCase().trim();
         const pCatName = (p.category_name || "").toString().toLowerCase().trim();
         const pName = (p.name || "").toString().toLowerCase().trim();
-        const pModel = (p.model_reference || "").toString().toLowerCase().trim();
 
         if (pCat === target || pCatId === target || pCatName === target) return true;
 
         // Coincidencia flexible para TV BOX
         const isTvTarget = target.includes("tv") || target.includes("box");
-        const isTvProduct = pCat.includes("tv") || pCatName.includes("tv") || pName.includes("tv box") || pName.includes("tvbox") || pModel.includes("n0301");
+        const isTvProduct = (pCat.includes("tv") || pCatName.includes("tv") || pName.includes("tv box") || pName.includes("tvbox")) && !pName.includes("soporte");
         if (isTvTarget && isTvProduct) return true;
 
         // Sinonimia para auto / vehículo / accesorios-para-auto
         const isAutoTarget = target.includes("auto") || target.includes("vehicul");
-        const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul");
+        const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul") || pName.includes("soporte");
         if (isAutoTarget && isAutoProduct) return true;
 
         return false;
