@@ -1,0 +1,668 @@
+/* ==========================================================================
+   OFERTAS DEMGEL (LANDING FLYER / QR) - SISTEMA MOBILE-FIRST
+   Metodología Estricta: diseno_movil (Base < 480px -> 768px -> 1024px)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. ESTILOS BASE (MOBILE-FIRST: < 480px)
+   Todo diseñado exclusivamente para interacción táctil con una sola mano.
+   ========================================================================== */
+
+:root {
+  --touch-target-min: 48px;
+  --ofertas-primary: #00A88F;
+  --ofertas-primary-light: #33BAA5;
+  --ofertas-cyan: #00F2FE;
+  --ofertas-red: #FF4444;
+  --ofertas-green: #25D366;
+  --ofertas-bg: #050505;
+  --ofertas-card-bg: rgba(18, 18, 20, 0.85);
+  --ofertas-border: rgba(255, 255, 255, 0.08);
+  --ofertas-border-teal: rgba(0, 168, 143, 0.4);
+}
+
+/* Base fluida para la landing de ofertas */
+body.landing-ofertas {
+  background-color: var(--ofertas-bg);
+  min-height: 100vh;
+  padding-bottom: 5.5rem;
+}
+
+/* Header Adaptable Táctil */
+.landing-ofertas #main-header {
+  padding: 0.65rem 0;
+  background: rgba(5, 5, 5, 0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--ofertas-border);
+}
+
+.landing-ofertas nav.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.landing-ofertas .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Botones de navegación con área táctil mínima de 48px */
+.landing-ofertas .btn-nav-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: 0 1.1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--ofertas-border);
+  border-radius: 50px;
+  color: #FFFFFF;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .btn-nav-home:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.landing-ofertas .nav-cart-btn {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  border-radius: 50%;
+  touch-action: manipulation;
+}
+
+/* HERO COMPACTO Y DE ALTA CONVERSIÓN PARA ESCANEO QR */
+.qr-hero-section {
+  position: relative;
+  padding: 4.8rem 1rem 1.4rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.qr-hero-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90vw;
+  height: 280px;
+  background: radial-gradient(circle, rgba(0, 168, 143, 0.22) 0%, rgba(0, 242, 254, 0.05) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.qr-hero-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Badge de Activación QR */
+.qr-activation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.95rem;
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.4);
+  border-radius: 50px;
+  color: #FF7B7B;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  animation: pulseBadge 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 14px 2px rgba(255, 68, 68, 0.25); }
+}
+
+/* Título optimizado para pantallas táctiles */
+.qr-hero-title {
+  font-size: 1.85rem;
+  line-height: 1.18;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.03rem;
+  color: #FFFFFF;
+}
+
+.qr-hero-subtitle {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #B8B8B8;
+  margin-bottom: 1.25rem;
+  padding: 0 0.5rem;
+}
+
+/* Pills de Beneficios en Móvil */
+.qr-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.qr-trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(0, 168, 143, 0.1);
+  border: 1px solid var(--ofertas-border-teal);
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ofertas-primary-light);
+}
+
+/* BARRA DE CATEGORÍAS FLUIDA (Swipe Táctil en Móvil) */
+.qr-categories-section {
+  padding: 0.75rem 0;
+  background: rgba(0, 0, 0, 0.65);
+  border-top: 1px solid var(--ofertas-border);
+  border-bottom: 1px solid var(--ofertas-border);
+  position: sticky;
+  top: 58px;
+  z-index: 100;
+  backdrop-filter: blur(14px);
+}
+
+.landing-ofertas .categories-bar {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.2rem 1rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.landing-ofertas .category-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target-min);
+  padding: 0 1.15rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ofertas-border);
+  border-radius: 50px;
+  color: #CCCCCC;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .category-pill.active {
+  background: rgba(0, 168, 143, 0.2);
+  border-color: var(--ofertas-primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(0, 168, 143, 0.3);
+}
+
+.landing-ofertas .category-pill:active {
+  background: rgba(0, 168, 143, 0.3);
+}
+
+/* GRID DE PRODUCTOS EN MÓVIL (2 Columnas Fluidas, Lado a Lado) */
+.landing-ofertas .products-section {
+  padding: 1.25rem 0.5rem 3rem;
+}
+
+.landing-ofertas .products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  width: 100%;
+}
+
+/* Tarjeta de Oferta en Móvil (2 Columnas Compacta) */
+.landing-ofertas .product-card {
+  background: var(--ofertas-card-bg);
+  border: 1px solid var(--ofertas-border);
+  border-radius: 16px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Insignias de la Tarjeta */
+.landing-ofertas .product-card__badges {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0.45rem;
+}
+
+.landing-ofertas .badge-online-offer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: rgba(0, 168, 143, 0.2);
+  border: 1px solid var(--ofertas-border-teal);
+  color: var(--ofertas-primary-light);
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 0.2rem 0.45rem;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.landing-ofertas .badge-discount {
+  background: var(--ofertas-red);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+/* Imagen del Producto Fluida */
+.landing-ofertas .product-card__img-wrap {
+  width: 100%;
+  height: 130px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.65rem;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .product-card__img {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+}
+
+/* Información del Producto */
+.landing-ofertas .product-card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #999999;
+  margin-bottom: 0.25rem;
+}
+
+.landing-ofertas .product-card__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #FFFFFF;
+  margin-bottom: 0.55rem;
+  min-height: 2.3rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Precios con Gran Visibilidad de Ahorro */
+.landing-ofertas .product-card__pricing {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--ofertas-border);
+  border-radius: 10px;
+  padding: 0.55rem;
+  margin-bottom: 0.55rem;
+}
+
+.landing-ofertas .price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  margin-bottom: 0.2rem;
+}
+
+.landing-ofertas .price-store {
+  color: #FF5A5A;
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.landing-ofertas .price-online-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+
+.landing-ofertas .price-online {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--ofertas-primary-light);
+  letter-spacing: -0.03rem;
+}
+
+.landing-ofertas .savings-chip {
+  background: rgba(37, 211, 102, 0.15);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  color: var(--ofertas-green);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.4rem;
+  border-radius: 50px;
+  text-align: center;
+}
+
+/* Indicador de Stock Táctil */
+.landing-ofertas .product-card__stock {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: #AAAAAA;
+  margin-bottom: 0.65rem;
+}
+
+.landing-ofertas .stock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ofertas-green);
+  box-shadow: 0 0 6px var(--ofertas-green);
+}
+
+/* Botones de Acción Táctiles */
+.landing-ofertas .product-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: auto;
+}
+
+.landing-ofertas .btn-add-cart {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--ofertas-primary);
+  color: #000000;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .btn-add-cart:active {
+  transform: scale(0.97);
+  background: var(--ofertas-primary-light);
+}
+
+.landing-ofertas .btn-quick-buy {
+  width: 100%;
+  min-height: 38px;
+  padding: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ofertas-border);
+  color: #FFFFFF;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .btn-quick-buy:active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #FFFFFF;
+}
+
+/* CONTROLES TÁCTILES DEL CARRITO */
+.landing-ofertas .cart-drawer {
+  width: 100%;
+}
+
+.landing-ofertas .cart-qty-control {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--ofertas-border);
+  border-radius: 50px;
+  padding: 2px;
+}
+
+.landing-ofertas .cart-qty-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.landing-ofertas .cart-qty-val {
+  min-width: 32px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.landing-ofertas .btn-checkout {
+  min-height: 52px;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+/* BARRA FLOTANTE INFERIOR MÓVIL (Sticky Quick Cart) */
+.mobile-sticky-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(10, 10, 12, 0.96);
+  border-top: 1px solid var(--ofertas-border-teal);
+  backdrop-filter: blur(18px);
+  padding: 0.65rem 1rem;
+  z-index: 990;
+  display: none;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.mobile-sticky-cart-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mobile-sticky-cart-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-sticky-cart-count {
+  font-size: 0.75rem;
+  color: #AAAAAA;
+}
+
+.mobile-sticky-cart-total {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--ofertas-primary-light);
+}
+
+.mobile-sticky-cart-cta {
+  min-height: var(--touch-target-min);
+  padding: 0 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--ofertas-primary);
+  color: #000000;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mobile-sticky-cart-cta:active {
+  background: var(--ofertas-primary-light);
+}
+
+
+/* ==========================================================================
+   2. TABLET Y PANTALLAS MEDIAS (min-width: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+  body.landing-ofertas {
+    padding-bottom: 0;
+  }
+
+  .mobile-sticky-cart-bar {
+    display: none !important;
+  }
+
+  .landing-ofertas #main-header {
+    padding: 1rem 0;
+  }
+
+  .landing-ofertas nav.container {
+    padding: 0 2rem;
+  }
+
+  .qr-hero-section {
+    padding: 6.5rem 2rem 2.5rem;
+  }
+
+  .qr-hero-title {
+    font-size: 2.75rem;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  .qr-hero-subtitle {
+    font-size: 1.1rem;
+    max-width: 680px;
+  }
+
+  .qr-trust-strip {
+    gap: 1rem;
+  }
+
+  .qr-trust-chip {
+    font-size: 0.85rem;
+    padding: 0.55rem 1.1rem;
+  }
+
+  .landing-ofertas .products-section {
+    padding: 2.5rem 2rem 5rem;
+  }
+
+  .landing-ofertas .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.75rem;
+  }
+
+  .landing-ofertas .cart-drawer {
+    width: 440px;
+  }
+}
+
+
+/* ==========================================================================
+   3. ESCRITORIO Y PANTALLAS GRANDES (min-width: 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .qr-hero-section {
+    padding: 7.5rem 2rem 3rem;
+  }
+
+  .qr-hero-title {
+    font-size: 3.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .qr-hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .landing-ofertas .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  /* Efectos de :hover exclusivamente activos en escritorios */
+  @media (hover: hover) {
+    .landing-ofertas .product-card {
+      transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+                  border-color 0.3s ease,
+                  box-shadow 0.3s ease;
+    }
+
+    .landing-ofertas .product-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--ofertas-primary);
+      box-shadow: 0 16px 36px rgba(0, 168, 143, 0.2);
+    }
+
+    .landing-ofertas .product-card:hover .product-card__img {
+      transform: scale(1.06);
+    }
+
+    .landing-ofertas .btn-add-cart:hover {
+      background: var(--ofertas-primary-light);
+      box-shadow: 0 6px 20px rgba(0, 168, 143, 0.4);
+    }
+
+    .landing-ofertas .btn-quick-buy:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #FFFFFF;
+    }
+
+    .landing-ofertas .category-pill:hover {
+      border-color: var(--ofertas-primary);
+      color: #FFFFFF;
+    }
+
+    .landing-ofertas .btn-nav-home:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #FFFFFF;
+    }
+  }
+}
