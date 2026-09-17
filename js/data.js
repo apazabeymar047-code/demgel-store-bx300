@@ -234,7 +234,22 @@ function getProductsByCategory(categorySlug) {
     if (!categorySlug || categorySlug === "todos") {
         return list.filter(p => p.is_active !== false);
     }
-    return list.filter(p => p.is_active !== false && (p.category === categorySlug || p.category_id === categorySlug));
+    const target = categorySlug.toString().toLowerCase().trim();
+    return list.filter(p => {
+        if (p.is_active === false) return false;
+        const pCat = (p.category || "").toString().toLowerCase().trim();
+        const pCatId = (p.category_id || "").toString().toLowerCase().trim();
+        const pCatName = (p.category_name || "").toString().toLowerCase().trim();
+
+        if (pCat === target || pCatId === target || pCatName === target) return true;
+
+        // Sinonimia para auto / vehículo / accesorios-para-auto
+        const isAutoTarget = target.includes("auto") || target.includes("vehicul");
+        const isAutoProduct = pCat.includes("auto") || pCat.includes("vehicul") || pCatName.includes("auto") || pCatName.includes("vehicul");
+        if (isAutoTarget && isAutoProduct) return true;
+
+        return false;
+    });
 }
 
 // Helper para obtener solo ofertas
