@@ -212,14 +212,9 @@ function renderOrdersView() {
                 <td>${receiptHtml}</td>
                 <td>${timerHtml}</td>
                 <td>
-                    <div style="display:flex; gap:6px; flex-wrap:nowrap;">
-                        <button class="btn-action btn-action--primary" onclick="openOrderDetailModal('${o.id}')" title="Gestionar pedido">
-                            <i class="fas fa-sliders-h"></i> Gestionar
-                        </button>
-                        <button class="btn-action btn-action--danger" onclick="openDeleteOrderModal('${o.id}')" title="Eliminar pedido">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </div>
+                    <button class="btn-action btn-action--primary" onclick="openOrderDetailModal('${o.id}')">
+                        <i class="fas fa-sliders-h"></i> Gestionar
+                    </button>
                 </td>
             </tr>
         `;
@@ -523,27 +518,15 @@ function renderProductsView() {
                 <td>${formatCLP(p.store_price)}</td>
                 <td><strong style="color:var(--primary-light);">${formatCLP(p.online_price)}</strong></td>
                 <td><span style="color:var(--accent-cyan); font-weight:800;">${p.discount_pct}%</span></td>
+                <td>${stockBadge}</td>
                 <td>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="btn-action" style="padding:2px 8px; font-weight:900;" onclick="handleQuickStock('${p.id}', -1)" title="Reducir 1 unidad">-</button>
-                        ${stockBadge}
-                        <button class="btn-action" style="padding:2px 8px; font-weight:900;" onclick="handleQuickStock('${p.id}', 1)" title="Aumentar 1 unidad">+</button>
-                    </div>
+                    ${p.is_deal ? '<span style="font-size:0.75rem; color:#FFB400; margin-right:4px;">★ Oferta</span>' : ''}
+                    ${p.is_featured ? '<span style="font-size:0.75rem; color:var(--accent-cyan);">★ Destacado</span>' : ''}
                 </td>
                 <td>
-                    <button class="btn-action" style="font-size:0.75rem; padding:2px 8px;" onclick="handleToggleProductActive('${p.id}')" title="Alternar activo/inactivo">
-                        ${p.is_active ? '<span style="color:var(--primary-light);">● Activo</span>' : '<span style="color:var(--text-muted);">○ Inactivo</span>'}
+                    <button class="btn-action" onclick="openProductEditModal('${p.id}')">
+                        <i class="fas fa-edit"></i> Editar
                     </button>
-                </td>
-                <td>
-                    <div style="display:flex; gap:6px; flex-wrap:nowrap;">
-                        <button class="btn-action" onclick="openProductEditModal('${p.id}')" title="Editar producto">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn-action btn-action--danger" onclick="openDeleteProductModalStep1('${p.id}')" title="Eliminar producto">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </div>
                 </td>
             </tr>
         `;
@@ -1146,155 +1129,6 @@ function executeCategoryDeletion(cat) {
     document.getElementById("modal-delete-category").classList.remove("active");
     renderCategoriesView();
     updateProductCategorySelects();
-}
-
-// ── LÓGICA DE ELIMINACIÓN DE PRODUCTO CON DOBLE CONFIRMACIÓN ──
-let currentDeleteProductStep = 1;
-
-function openDeleteProductModalStep1(productId) {
-    const prod = AdminProductService.getProductById(productId);
-    if (!prod) return;
-
-    currentDeleteProductStep = 1;
-    document.getElementById("delete-product-target-id").value = prod.id;
-
-    renderDeleteProductModalStepUI(prod);
-    document.getElementById("modal-delete-product").classList.add("active");
-}
-
-function renderDeleteProductModalStepUI(prod) {
-    const titleEl = document.getElementById("delete-product-modal-title");
-    const bodyEl = document.getElementById("delete-product-modal-body");
-    const btnEl = document.getElementById("btn-confirm-delete-product");
-
-    if (currentDeleteProductStep === 1) {
-        if (titleEl) titleEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Confirmación 1/2: Eliminar Producto`;
-        if (bodyEl) {
-            bodyEl.innerHTML = `
-                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
-                    <strong style="color: #FFF; font-size: 1rem; display: block; margin-bottom: 4px;">Paso 1/2: Confirmación inicial</strong>
-                    ¿Estás seguro de que deseas eliminar el producto <strong>"${prod.name}"</strong> (Ref: <code>${prod.model_reference || 'Sin ref'}</code>)?
-                </div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
-                    Al continuar, el sistema solicitará una <strong>segunda confirmación obligatoria</strong> para prevenir borrados accidentales en la tienda.
-                </p>
-            `;
-        }
-        if (btnEl) {
-            btnEl.className = "btn-action btn-action--danger";
-            btnEl.innerHTML = `Continuar al Paso 2 &rarr;`;
-            btnEl.onclick = () => {
-                currentDeleteProductStep = 2;
-                renderDeleteProductModalStepUI(prod);
-            };
-        }
-    } else if (currentDeleteProductStep === 2) {
-        if (titleEl) titleEl.innerHTML = `<i class="fas fa-skull-crossbones"></i> Confirmación 2/2 FINAL: Confirmar Borrado Definitivo`;
-        if (bodyEl) {
-            bodyEl.innerHTML = `
-                <div style="background: rgba(239, 68, 68, 0.22); border: 1px solid rgba(239, 68, 68, 0.6); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
-                    <strong style="color: #FF6B6B; font-size: 1.05rem; display: block; margin-bottom: 6px;">🚨 ¡ÚLTIMO AVISO DE CONFIRMACIÓN!</strong>
-                    El producto <strong>"${prod.name}"</strong> será eliminado PERMANENTEMENTE del catálogo de la tienda web y del panel.
-                </div>
-                <p style="font-size: 0.85rem; color: #FFF; font-weight: 700; line-height: 1.5;">
-                    Haz clic en el botón a continuación para ejecutar el borrado definitivo.
-                </p>
-            `;
-        }
-        if (btnEl) {
-            btnEl.className = "btn-action btn-action--danger";
-            btnEl.innerHTML = `<i class="fas fa-trash-alt"></i> 🗑️ Sí, Eliminar Definitivamente`;
-            btnEl.onclick = () => executeProductDeletion(prod);
-        }
-    }
-}
-
-function executeProductDeletion(prod) {
-    const res = AdminProductService.deleteProduct(prod.id);
-    if (!res.success) {
-        alert("Error al eliminar: " + res.message);
-        return;
-    }
-
-    showToast(res.message);
-
-    // Notificar a Telegram Bot
-    if (typeof DemgelTelegramService !== "undefined" && DemgelTelegramService.sendTextMessage) {
-        const textHtml = `
-🗑️ <b>PRODUCTO ELIMINADO DEL CATÁLOGO DEMGEL</b>
-
-📦 <b>Producto:</b> ${prod.name}
-📌 <b>Ref:</b> <code>${prod.model_reference || 'Sin ref'}</code>
-💰 <b>Precio Online:</b> ${formatCLP(prod.online_price)}
-
-✨ <i>El producto ha sido removido del catálogo de la tienda y del Admin Panel.</i>
-        `.trim();
-        DemgelTelegramService.sendTextMessage(textHtml);
-    }
-
-    document.getElementById("modal-delete-product").classList.remove("active");
-    renderProductsView();
-    renderDashboardView();
-}
-
-// ── LÓGICA DE ELIMINACIÓN DE PEDIDO ──
-function openDeleteOrderModal(orderId) {
-    const order = AdminOrderService.getOrderById(orderId);
-    if (!order) return;
-
-    document.getElementById("delete-order-target-id").value = order.id;
-    const bodyEl = document.getElementById("delete-order-modal-body");
-    if (bodyEl) {
-        bodyEl.innerHTML = `
-            <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
-                ¿Deseas eliminar permanentemente el registro del pedido <strong>"${order.order_number}"</strong> del cliente <strong>"${order.customer_name}"</strong>?
-            </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">
-                Esta acción eliminará la orden del historial. Es ideal para limpiar pedidos de prueba.
-            </p>
-        `;
-    }
-
-    const confirmBtn = document.getElementById("btn-confirm-delete-order-action");
-    if (confirmBtn) {
-        confirmBtn.onclick = () => executeOrderDeletion(order);
-    }
-
-    document.getElementById("modal-delete-order").classList.add("active");
-}
-
-function executeOrderDeletion(order) {
-    const res = AdminOrderService.deleteOrder(order.id);
-    if (!res.success) {
-        alert("Error al eliminar pedido: " + res.message);
-        return;
-    }
-
-    showToast(res.message);
-    document.getElementById("modal-delete-order").classList.remove("active");
-    const modalDetail = document.getElementById("modal-order-detail");
-    if (modalDetail) modalDetail.classList.remove("active");
-
-    renderOrdersView();
-    renderDashboardView();
-}
-
-// ── AJUSTE RÁPIDO DE STOCK Y CAMBIO DE ESTADO ──
-function handleQuickStock(productId, delta) {
-    const res = AdminProductService.quickAdjustStock(productId, delta);
-    if (res.success) {
-        showToast(res.message);
-        renderProductsView();
-        renderDashboardView();
-    }
-}
-
-function handleToggleProductActive(productId) {
-    const res = AdminProductService.toggleProductActive(productId);
-    if (res.success) {
-        showToast(res.message);
-        renderProductsView();
-    }
 }
 
 // Actualizar selectores dinámicos de categoría en los modales de productos
