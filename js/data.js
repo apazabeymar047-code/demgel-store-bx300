@@ -18,16 +18,18 @@ let DEMGEL_CATEGORIES_BASE = [
 function getActiveCategoriesList() {
     try {
         const raw = localStorage.getItem("demgel_mock_categories");
+        const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
         if (raw) {
             let list = JSON.parse(raw);
             if (Array.isArray(list)) {
-                return list.filter(c => c.is_active !== false);
+                return list.filter(c => c.is_active !== false && !deletedList.includes(c.slug) && !deletedList.includes(c.id));
             }
         }
     } catch (e) {
         console.warn("Error al cargar categorías de localStorage:", e);
     }
-    return DEMGEL_CATEGORIES_BASE;
+    const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
+    return DEMGEL_CATEGORIES_BASE.filter(c => !deletedList.includes(c.slug) && !deletedList.includes(c.id));
 }
 
 let DEMGEL_CATEGORIES = getActiveCategoriesList();
@@ -292,6 +294,7 @@ async function syncCatalogWithSupabase() {
             ]);
 
             if (remoteCats && remoteCats.length > 0) {
+                const deletedList = JSON.parse(localStorage.getItem("demgel_deleted_categories") || "[]");
                 const hasLocalCustomCats = Boolean(localStorage.getItem("demgel_mock_categories"));
                 if (hasLocalCustomCats) {
                     DEMGEL_CATEGORIES = getActiveCategoriesList();
@@ -302,7 +305,7 @@ async function syncCatalogWithSupabase() {
                         name: c.name,
                         icon: c.icon || "fa-tag",
                         uuid: c.id
-                    }));
+                    })).filter(c => !deletedList.includes(c.slug) && !deletedList.includes(c.id));
                 }
             }
 
