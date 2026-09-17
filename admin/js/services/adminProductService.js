@@ -287,77 +287,6 @@ const AdminProductService = (function() {
         } catch (e) {
             console.error("Error al crear producto:", e);
             return { success: false, error: "CREATE_ERROR", message: "Error interno al crear producto." };
-    function deleteProduct(productId) {
-        initProducts();
-        try {
-            let products = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || "[]");
-            const prod = products.find(p => p.id === productId);
-            if (!prod) {
-                return { success: false, error: "NOT_FOUND", message: "El producto no existe." };
-            }
-
-            products = products.filter(p => p.id !== productId);
-            localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-
-            const stockMap = JSON.parse(localStorage.getItem(STORAGE_KEY_STOCK) || "{}");
-            delete stockMap[productId];
-            localStorage.setItem(STORAGE_KEY_STOCK, JSON.stringify(stockMap));
-
-            try {
-                window.dispatchEvent(new CustomEvent("demgel:category_updated", { detail: { deletedProductId: productId } }));
-            } catch (e) {}
-
-            if (typeof AdminOrderService !== "undefined" && AdminOrderService.logAdminEvent) {
-                AdminOrderService.logAdminEvent("PRODUCT_DELETED", productId, { product_name: prod.name });
-            }
-
-            return {
-                success: true,
-                product: prod,
-                message: `Producto "${prod.name}" eliminado del catálogo.`
-            };
-        } catch (e) {
-            console.error("Error al eliminar producto:", e);
-            return { success: false, error: "DELETE_ERROR", message: "Error interno al eliminar producto." };
-        }
-    }
-
-    function quickAdjustStock(productId, delta) {
-        initProducts();
-        try {
-            let products = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || "[]");
-            const idx = products.findIndex(p => p.id === productId);
-            if (idx === -1) return { success: false, message: "Producto no encontrado." };
-
-            const currentStock = getLiveStock(productId, products[idx].stock);
-            const newStock = Math.max(0, currentStock + delta);
-
-            products[idx].stock = newStock;
-            localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-
-            const stockMap = JSON.parse(localStorage.getItem(STORAGE_KEY_STOCK) || "{}");
-            stockMap[productId] = newStock;
-            localStorage.setItem(STORAGE_KEY_STOCK, JSON.stringify(stockMap));
-
-            return { success: true, newStock: newStock, message: `Stock actualizado a ${newStock} un.` };
-        } catch (e) {
-            return { success: false, message: "Error al ajustar stock." };
-        }
-    }
-
-    function toggleProductActive(productId) {
-        initProducts();
-        try {
-            let products = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || "[]");
-            const idx = products.findIndex(p => p.id === productId);
-            if (idx === -1) return { success: false, message: "Producto no encontrado." };
-
-            products[idx].is_active = !products[idx].is_active;
-            localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-
-            return { success: true, is_active: products[idx].is_active, message: `Producto marcado como ${products[idx].is_active ? 'Activo' : 'Inactivo'}.` };
-        } catch (e) {
-            return { success: false, message: "Error al cambiar estado." };
         }
     }
 
@@ -366,9 +295,6 @@ const AdminProductService = (function() {
         getProducts,
         getProductById,
         updateProduct,
-        createProduct,
-        deleteProduct,
-        quickAdjustStock,
-        toggleProductActive
+        createProduct
     };
 })();
