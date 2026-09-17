@@ -221,10 +221,14 @@ function getActiveProductsList() {
                 let modified = false;
                 const originalLen = stored.length;
 
-                // Purgar productos fantasma de Soporte Magnético duplicados como TV BOX
+                // Purgar productos fantasma de Soporte Magnético creados en pruebas locales
                 let filtered = stored.filter(p => {
                     const pName = (p.name || "").toLowerCase();
-                    if (pName.includes("soporte") && (p.category === "tvbox" || p.model_reference === "D-N0301")) {
+                    const pModel = (p.model_reference || "").toUpperCase();
+                    const pId = (p.id || "").toLowerCase();
+
+                    // Eliminar cualquier producto de prueba que contenga "soporte" o "360" o con modelo D-N0301 que no sea la TV Box oficial
+                    if (pName.includes("soporte") || pName.includes("360") || (pModel === "D-N0301" && pId !== "prod-d-n0301")) {
                         return false;
                     }
                     return true;
@@ -232,24 +236,10 @@ function getActiveProductsList() {
 
                 if (filtered.length !== originalLen) modified = true;
 
-                // Sincronizar imágenes locales HD y limpiar asignaciones erróneas de categoría
+                // Sincronizar imágenes locales HD
                 let cleaned = filtered.map(p => {
                     const pName = (p.name || "").toLowerCase();
                     const modelRef = (p.model_reference || "").toUpperCase();
-
-                    // Sanitizar productos de Soporte Magnético / Accesorios para Auto
-                    if (pName.includes("soporte") || (pName.includes("auto") && !pName.includes("cargador"))) {
-                        if (p.category !== "auto" || p.category_name !== "Accesorios para Auto" || p.model_reference === "D-N0301" || (p.image && p.image.includes("D-N0301"))) {
-                            modified = true;
-                        }
-                        return {
-                            ...p,
-                            category: "auto",
-                            category_name: "Accesorios para Auto",
-                            model_reference: "D-D0004C",
-                            image: "assets/products/D-D0004C.jpg"
-                        };
-                    }
 
                     let imgPath = p.image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
@@ -257,7 +247,7 @@ function getActiveProductsList() {
                     }
 
                     // Auto-migrar categoría a TV BOX solo si el NOMBRE del producto incluye TV Box o es el ID oficial de TV Box
-                    if ((pName.includes("tv box") || pName.includes("tvbox") || p.id === "prod-d-n0301") && !pName.includes("soporte")) {
+                    if ((pName.includes("tv box") || pName.includes("tvbox") || p.id === "prod-d-n0301")) {
                         return { ...p, image: "assets/products/D-N0301.jpg", category: "tvbox", category_name: "TV BOX" };
                     }
 
