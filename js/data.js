@@ -20,13 +20,7 @@ function getActiveCategoriesList() {
         const raw = localStorage.getItem("demgel_mock_categories");
         if (raw) {
             let list = JSON.parse(raw);
-            if (Array.isArray(list) && list.length > 0) {
-                // Fusionar categorías base que puedan faltar en el almacenamiento del cliente
-                DEMGEL_CATEGORIES_BASE.forEach(defCat => {
-                    if (!list.some(c => c.slug === defCat.slug || c.id === defCat.id)) {
-                        list.push(defCat);
-                    }
-                });
+            if (Array.isArray(list)) {
                 return list.filter(c => c.is_active !== false);
             }
         }
@@ -298,30 +292,18 @@ async function syncCatalogWithSupabase() {
             ]);
 
             if (remoteCats && remoteCats.length > 0) {
-                const localActive = getActiveCategoriesList();
-                const mergedMap = new Map();
-                
-                // Preservar categorías locales activas
-                localActive.forEach(c => {
-                    const key = c.slug || c.id;
-                    mergedMap.set(key, { ...c, id: key });
-                });
-
-                // Fusionar categorías desde Supabase
-                remoteCats.forEach(c => {
-                    const key = c.slug || c.id;
-                    if (!mergedMap.has(key)) {
-                        mergedMap.set(key, {
-                            id: key,
-                            slug: key,
-                            name: c.name,
-                            icon: c.icon || "fa-tag",
-                            uuid: c.id
-                        });
-                    }
-                });
-
-                DEMGEL_CATEGORIES = Array.from(mergedMap.values());
+                const hasLocalCustomCats = Boolean(localStorage.getItem("demgel_mock_categories"));
+                if (hasLocalCustomCats) {
+                    DEMGEL_CATEGORIES = getActiveCategoriesList();
+                } else {
+                    DEMGEL_CATEGORIES = remoteCats.map(c => ({
+                        id: c.slug || c.id,
+                        slug: c.slug || c.id,
+                        name: c.name,
+                        icon: c.icon || "fa-tag",
+                        uuid: c.id
+                    }));
+                }
             }
 
             if (remoteProds && remoteProds.length > 0) {
