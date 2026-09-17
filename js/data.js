@@ -5,14 +5,31 @@
  * Modelos identificados en empaques reales Demgel.
  */
 
-let DEMGEL_CATEGORIES = [
-    { id: "todos", name: "Todos", icon: "fa-border-all" },
-    { id: "cargadores", name: "Cargadores", icon: "fa-plug" },
-    { id: "cables", name: "Cables", icon: "fa-bolt" },
-    { id: "auto", name: "Para Auto", icon: "fa-car" },
-    { id: "parlantes", name: "Mini Parlantes", icon: "fa-volume-high" },
-    { id: "otros", name: "Otros", icon: "fa-box-open" }
+let DEMGEL_CATEGORIES_BASE = [
+    { id: "todos", name: "Todos", slug: "todos", icon: "fa-border-all" },
+    { id: "cargadores", name: "Cargadores", slug: "cargadores", icon: "fa-plug" },
+    { id: "cables", name: "Cables", slug: "cables", icon: "fa-bolt" },
+    { id: "auto", name: "Para Auto", slug: "auto", icon: "fa-car" },
+    { id: "parlantes", name: "Mini Parlantes", slug: "parlantes", icon: "fa-volume-high" },
+    { id: "otros", name: "Otros", slug: "otros", icon: "fa-box-open" }
 ];
+
+function getActiveCategoriesList() {
+    try {
+        const raw = localStorage.getItem("demgel_mock_categories");
+        if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list) && list.length > 0) {
+                return list.filter(c => c.is_active !== false);
+            }
+        }
+    } catch (e) {
+        console.warn("Error al cargar categorías de localStorage:", e);
+    }
+    return DEMGEL_CATEGORIES_BASE;
+}
+
+let DEMGEL_CATEGORIES = getActiveCategoriesList();
 
 let DEMGEL_PRODUCTS = [
     {
