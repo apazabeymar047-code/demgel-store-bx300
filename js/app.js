@@ -63,12 +63,16 @@ function renderCategories() {
     const container = document.getElementById("categories-bar");
     if (!container) return;
 
+    const list = typeof getActiveCategoriesList === "function" ? getActiveCategoriesList() : DEMGEL_CATEGORIES;
+
     let html = "";
-    DEMGEL_CATEGORIES.forEach((cat, index) => {
+    list.forEach((cat, index) => {
         const activeClass = index === 0 ? "active" : "";
+        const catSlug = cat.slug || cat.id;
+        const iconClass = cat.icon ? (cat.icon.startsWith("fa-") ? `fas ${cat.icon}` : cat.icon) : "fas fa-tag";
         html += `
-            <button class="category-pill ${activeClass}" data-category="${cat.id}">
-                <i class="fas ${cat.icon}"></i>
+            <button class="category-pill ${activeClass}" data-category="${catSlug}">
+                <i class="${iconClass}"></i>
                 <span>${cat.name}</span>
             </button>
         `;
@@ -86,6 +90,20 @@ function renderCategories() {
         });
     });
 }
+
+// Sincronización en tiempo real entre pestañas y panel de administración
+window.addEventListener("storage", (e) => {
+    if (e.key === "demgel_mock_categories" || e.key === "demgel_mock_products") {
+        renderCategories();
+        const activeBtn = document.querySelector(".category-pill.active");
+        const activeCat = activeBtn ? activeBtn.getAttribute("data-category") : "todos";
+        renderProducts(activeCat);
+    }
+});
+
+window.addEventListener("demgel:category_updated", () => {
+    renderCategories();
+});
 
 // Renderizado de tarjetas de producto premium Demgel
 function renderProducts(categorySlug) {
