@@ -164,8 +164,8 @@ let DEMGEL_PRODUCTS = [
         id: "prod-d-n0301",
         model_reference: "D-N0301",
         name: "Demgel TV BOX 8K 2+16G Memoria",
-        category: "otros",
-        category_name: "Otros",
+        category: "tvbox",
+        category_name: "TV BOX",
         store_price: 24990,
         online_price: 19990,
         stock: 15,
@@ -216,14 +216,18 @@ function getActiveProductsList() {
     try {
         const raw = localStorage.getItem("demgel_mock_products");
         if (raw) {
-            const stored = JSON.parse(raw);
+            let stored = JSON.parse(raw);
             if (Array.isArray(stored) && stored.length > 0) {
-                // Sincronizar imágenes locales HD si es necesario
+                // Sincronizar imágenes locales HD y categoría de TV BOX en almacenamiento existente
                 return stored.map(p => {
                     const modelRef = (p.model_reference || "").toUpperCase();
                     let imgPath = p.image;
                     if (modelRef && ["D-E6048C", "D-E4016C", "D-E6051C", "D-D0004C", "D-P8002", "D-N0301", "D-E4012CC"].includes(modelRef)) {
                         imgPath = `assets/products/${modelRef}.jpg`;
+                    }
+                    // Auto-migrar categoría D-N0301 / TV BOX si estaba marcada como 'otros'
+                    if (modelRef === "D-N0301" || (p.name || "").toLowerCase().includes("tv box")) {
+                        return { ...p, image: imgPath, category: "tvbox", category_name: "TV BOX" };
                     }
                     return { ...p, image: imgPath };
                 });
@@ -247,8 +251,15 @@ function getProductsByCategory(categorySlug) {
         const pCat = (p.category || "").toString().toLowerCase().trim();
         const pCatId = (p.category_id || "").toString().toLowerCase().trim();
         const pCatName = (p.category_name || "").toString().toLowerCase().trim();
+        const pName = (p.name || "").toString().toLowerCase().trim();
+        const pModel = (p.model_reference || "").toString().toLowerCase().trim();
 
         if (pCat === target || pCatId === target || pCatName === target) return true;
+
+        // Coincidencia flexible para TV BOX
+        const isTvTarget = target.includes("tv") || target.includes("box");
+        const isTvProduct = pCat.includes("tv") || pCatName.includes("tv") || pName.includes("tv box") || pName.includes("tvbox") || pModel.includes("n0301");
+        if (isTvTarget && isTvProduct) return true;
 
         // Sinonimia para auto / vehículo / accesorios-para-auto
         const isAutoTarget = target.includes("auto") || target.includes("vehicul");
